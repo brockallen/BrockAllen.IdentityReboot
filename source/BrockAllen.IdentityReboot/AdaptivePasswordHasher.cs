@@ -1,11 +1,8 @@
 ﻿using BrockAllen.IdentityReboot.Internal;
 using Microsoft.AspNet.Identity;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BrockAllen.IdentityReboot
 {
@@ -13,23 +10,20 @@ namespace BrockAllen.IdentityReboot
     {
         public const char PasswordHashingIterationCountSeparator = '.';
 
-        int iterations;
-        
+        public int IterationCount { get; set; }
+
         public AdaptivePasswordHasher()
         {
         }
 
         public AdaptivePasswordHasher(int iterations)
         {
-            if (iterations > 0)
-            {
-                this.iterations = iterations;
-            }
+            this.IterationCount = iterations;
         }
 
         public string HashPassword(string password)
         {
-            var count = iterations;
+            var count = IterationCount;
             if (count <= 0)
             {
                 count = GetIterationsFromYear(GetCurrentYear());
