@@ -24,7 +24,7 @@ namespace PasswordHasher.Controllers
         public AccountController(UserManager<ApplicationUser> userManager)
         {
             UserManager = userManager;
-            UserManager.PasswordHasher = new DynamicPasswordHasher();
+            UserManager.PasswordHasher = new AdaptivePasswordHasher();
         }
 
         public UserManager<ApplicationUser> UserManager { get; private set; }

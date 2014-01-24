@@ -9,17 +9,17 @@ using System.Threading.Tasks;
 
 namespace BrockAllen.IdentityReboot
 {
-    public class DynamicPasswordHasher : IPasswordHasher
+    public class AdaptivePasswordHasher : IPasswordHasher
     {
         public const char PasswordHashingIterationCountSeparator = '.';
 
         int iterations;
         
-        public DynamicPasswordHasher()
+        public AdaptivePasswordHasher()
         {
         }
 
-        public DynamicPasswordHasher(int iterations)
+        public AdaptivePasswordHasher(int iterations)
         {
             if (iterations > 0)
             {

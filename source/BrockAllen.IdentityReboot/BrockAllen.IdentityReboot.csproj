@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="System.Web.Helpers.Crypto.cs" />
-    <Compile Include="DynamicPasswordHasher.cs" />
+    <Compile Include="AdaptivePasswordHasher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
