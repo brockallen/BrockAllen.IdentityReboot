@@ -1,0 +1,125 @@
+﻿using BrockAllen.IdentityReboot.Internal;
+using Microsoft.AspNet.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BrockAllen.IdentityReboot
+{
+    public class DynamicPasswordHasher : IPasswordHasher
+    {
+        public const char PasswordHashingIterationCountSeparator = '.';
+
+        int iterations;
+        
+        public DynamicPasswordHasher()
+        {
+        }
+
+        public DynamicPasswordHasher(int iterations)
+        {
+            if (iterations > 0)
+            {
+                this.iterations = iterations;
+            }
+        }
+
+        public string HashPassword(string password)
+        {
+            var count = iterations;
+            if (count <= 0)
+            {
+                count = GetIterationsFromYear(GetCurrentYear());
+            }
+            var result = Crypto.HashPassword(password, count);
+            return EncodeIterations(count) + PasswordHashingIterationCountSeparator + result;
+        }
+
+        public PasswordVerificationResult VerifyHashedPassword(string hashedPassword, string providedPassword)
+        {
+            if (hashedPassword.Contains(PasswordHashingIterationCountSeparator))
+            {
+                var parts = hashedPassword.Split(PasswordHashingIterationCountSeparator);
+                if (parts.Length != 2) return PasswordVerificationResult.Failed;
+
+                int count = DecodeIterations(parts[0]);
+                if (count <= 0) return PasswordVerificationResult.Failed;
+
+                hashedPassword = parts[1];
+
+                if (Crypto.VerifyHashedPassword(hashedPassword, providedPassword, count))
+                {
+                    return PasswordVerificationResult.Success;
+                }
+            }
+            else if (Crypto.VerifyHashedPassword(hashedPassword, providedPassword))
+            {
+                return PasswordVerificationResult.Success;
+            }
+
+            return PasswordVerificationResult.Failed;
+        }
+
+        public string EncodeIterations(int count)
+        {
+            return count.ToString("X");
+        }
+
+        public int DecodeIterations(string prefix)
+        {
+            int val;
+            if (Int32.TryParse(prefix, System.Globalization.NumberStyles.HexNumber, null, out val))
+            {
+                return val;
+            }
+            return -1;
+        }
+        
+        // from OWASP : https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
+        const int StartYear = 2000;
+        const int StartCount = 1000;
+        public int GetIterationsFromYear(int year)
+        {
+            if (year > StartYear)
+            {
+                var diff = (year - StartYear) / 2;
+                var mul = (int)Math.Pow(2, diff);
+                int count = StartCount * mul;
+                // if we go negative, then we wrapped (expected in year ~2044). 
+                // Int32.Max is best we can do at this point
+                if (count < 0) count = Int32.MaxValue;
+                return count;
+            }
+            return StartCount;
+        }
+
+        [MethodImpl(MethodImplOptions.NoOptimization)]
+        internal static bool SlowEqualsInternal(string a, string b)
+        {
+            if (Object.ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            if (a == null || b == null || a.Length != b.Length)
+            {
+                return false;
+            }
+
+            bool same = true;
+            for (var i = 0; i < a.Length; i++)
+            {
+                same &= (a[i] == b[i]);
+            }
+            return same;
+        }
+
+        public virtual int GetCurrentYear()
+        {
+            return DateTime.Now.Year;
+        }
+    }
+}

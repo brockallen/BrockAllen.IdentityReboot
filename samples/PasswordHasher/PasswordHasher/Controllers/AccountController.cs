@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin.Security;
 using PasswordHasher.Models;
+using BrockAllen.IdentityReboot;
 
 namespace PasswordHasher.Controllers
 {
@@ -23,6 +24,7 @@ namespace PasswordHasher.Controllers
         public AccountController(UserManager<ApplicationUser> userManager)
         {
             UserManager = userManager;
+            UserManager.PasswordHasher = new DynamicPasswordHasher();
         }
 
         public UserManager<ApplicationUser> UserManager { get; private set; }
