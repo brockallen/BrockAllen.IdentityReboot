@@ -118,6 +118,8 @@ UpgradeLog*.XML
 #NuGet Package Restore
 !NuGet.exe
 
+*.mdf
+*.ldf
 
 ############
 ## Windows
