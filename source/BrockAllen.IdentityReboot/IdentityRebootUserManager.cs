@@ -4,17 +4,18 @@ using System.Threading.Tasks;
 
 namespace BrockAllen.IdentityReboot
 {
-    public class IdentityRebootUserManager<TUser> : UserManager<TUser>
-        where TUser : IUser
+    public class IdentityRebootUserManager<TUser, TKey> : UserManager<TUser, TKey>
+        where TUser : class, IUser<TKey>
+        where TKey : IEquatable<TKey>
     {
         public IdentityRebootConfiguration Configuration { get; private set; }
 
-        public IdentityRebootUserManager(IUserStore<TUser> store)
+        public IdentityRebootUserManager(IUserStore<TUser, TKey> store)
             : this(store, null)
         {
         }
 
-        public IdentityRebootUserManager(IUserStore<TUser> store, IdentityRebootConfiguration config)
+        public IdentityRebootUserManager(IUserStore<TUser, TKey> store, IdentityRebootConfiguration config)
             : base(store)
         {
             if (config == null)
@@ -42,9 +43,9 @@ namespace BrockAllen.IdentityReboot
             }
         }
 
-        IPasswordBruteForcePreventionStore<TUser> GetPasswordBruteForcePreventionStore()
+        IPasswordBruteForcePreventionStore<TUser, TKey> GetPasswordBruteForcePreventionStore()
         {
-            var store = this.Store as IPasswordBruteForcePreventionStore<TUser>;
+            var store = this.Store as IPasswordBruteForcePreventionStore<TUser, TKey>;
             if (store == null)
             {
                 throw new NotImplementedException(Messages.IPasswordBruteForcePreventionStoreNotImplemented);
@@ -130,7 +131,7 @@ namespace BrockAllen.IdentityReboot
             return result;
         }
 
-        public async override Task<IdentityResult> ChangePasswordAsync(string userId, string currentPassword, string newPassword)
+        public override async Task<IdentityResult> ChangePasswordAsync(TKey userId, string currentPassword, string newPassword)
         {
             var user = await base.FindByIdAsync(userId);
             if (user != null)
@@ -151,6 +152,21 @@ namespace BrockAllen.IdentityReboot
                 }
             }
             return result;
+        }
+    }
+
+    public class IdentityRebootUserManager<TUser> :
+        IdentityRebootUserManager<TUser, string>
+        where TUser : class, IUser<string>
+    {
+        public IdentityRebootUserManager(IUserStore<TUser> store)
+            : this(store, null)
+        {
+        }
+        
+        public IdentityRebootUserManager(IUserStore<TUser> store, IdentityRebootConfiguration config)
+            : base(store, config)
+        {
         }
     }
 }
