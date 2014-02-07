@@ -64,6 +64,10 @@ namespace BrockAllen.IdentityReboot
 
             var store = GetPasswordBruteForcePreventionStore();
             var failedLoginAttempts = await store.GetFailedLoginAttemptsAsync(user);
+            if (failedLoginAttempts == null)
+            {
+                failedLoginAttempts = new FailedLoginAttempts();
+            }
 
             bool result = false;
             if (Configuration.FailedLoginsAllowed <= failedLoginAttempts.Count)
@@ -101,6 +105,10 @@ namespace BrockAllen.IdentityReboot
 
             var store = GetPasswordBruteForcePreventionStore();
             var failedLoginAttempts = await store.GetFailedLoginAttemptsAsync(user);
+            if (failedLoginAttempts == null)
+            {
+                failedLoginAttempts = new FailedLoginAttempts();
+            }
 
             if (failedLoginAttempts.Count <= 0)
             {
@@ -133,6 +141,7 @@ namespace BrockAllen.IdentityReboot
             {
                 await RecordPasswordFailureAsync(user);
             }
+
             return result;
         }
 
@@ -156,6 +165,7 @@ namespace BrockAllen.IdentityReboot
                     await RecordPasswordFailureAsync(user);
                 }
             }
+
             return result;
         }
     }
