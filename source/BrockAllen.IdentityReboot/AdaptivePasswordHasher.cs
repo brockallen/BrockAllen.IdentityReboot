@@ -34,24 +34,27 @@ namespace BrockAllen.IdentityReboot
 
         public PasswordVerificationResult VerifyHashedPassword(string hashedPassword, string providedPassword)
         {
-            if (hashedPassword.Contains(PasswordHashingIterationCountSeparator))
+            if (!String.IsNullOrWhiteSpace(hashedPassword))
             {
-                var parts = hashedPassword.Split(PasswordHashingIterationCountSeparator);
-                if (parts.Length != 2) return PasswordVerificationResult.Failed;
+                if (hashedPassword.Contains(PasswordHashingIterationCountSeparator))
+                {
+                    var parts = hashedPassword.Split(PasswordHashingIterationCountSeparator);
+                    if (parts.Length != 2) return PasswordVerificationResult.Failed;
 
-                int count = DecodeIterations(parts[0]);
-                if (count <= 0) return PasswordVerificationResult.Failed;
+                    int count = DecodeIterations(parts[0]);
+                    if (count <= 0) return PasswordVerificationResult.Failed;
 
-                hashedPassword = parts[1];
+                    hashedPassword = parts[1];
 
-                if (Crypto.VerifyHashedPassword(hashedPassword, providedPassword, count))
+                    if (Crypto.VerifyHashedPassword(hashedPassword, providedPassword, count))
+                    {
+                        return PasswordVerificationResult.Success;
+                    }
+                }
+                else if (Crypto.VerifyHashedPassword(hashedPassword, providedPassword))
                 {
                     return PasswordVerificationResult.Success;
                 }
-            }
-            else if (Crypto.VerifyHashedPassword(hashedPassword, providedPassword))
-            {
-                return PasswordVerificationResult.Success;
             }
 
             return PasswordVerificationResult.Failed;
