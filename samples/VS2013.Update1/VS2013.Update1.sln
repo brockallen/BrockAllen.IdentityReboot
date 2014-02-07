@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrockAllen.IdentityReboot",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrockAllen.IdentityReboot.Ef", "..\..\source\BrockAllen.IdentityReboot.Ef\BrockAllen.IdentityReboot.Ef.csproj", "{3DFF4D76-A3B5-4E42-B99F-B84E8D676122}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VS2013.1", "VS2013.1\VS2013.1.csproj", "{DA1A6320-6CEB-49A0-BBC9-0D0D363530D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VS2013.Update1", "VS2013.Update1\VS2013.Update1.csproj", "{35919BFA-9B70-445C-A554-0FBABA092E8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{3DFF4D76-A3B5-4E42-B99F-B84E8D676122}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DFF4D76-A3B5-4E42-B99F-B84E8D676122}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DFF4D76-A3B5-4E42-B99F-B84E8D676122}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DA1A6320-6CEB-49A0-BBC9-0D0D363530D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA1A6320-6CEB-49A0-BBC9-0D0D363530D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA1A6320-6CEB-49A0-BBC9-0D0D363530D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA1A6320-6CEB-49A0-BBC9-0D0D363530D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35919BFA-9B70-445C-A554-0FBABA092E8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35919BFA-9B70-445C-A554-0FBABA092E8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35919BFA-9B70-445C-A554-0FBABA092E8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35919BFA-9B70-445C-A554-0FBABA092E8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
