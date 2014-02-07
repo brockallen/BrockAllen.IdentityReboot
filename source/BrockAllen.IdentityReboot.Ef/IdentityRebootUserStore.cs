@@ -9,7 +9,7 @@ namespace BrockAllen.IdentityReboot.Ef
     public class IdentityRebootUserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : 
         UserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim>, 
         IPasswordBruteForcePreventionStore<TUser, TKey>
-        where TUser: IdentityUser<TKey, TUserLogin, TUserRole, TUserClaim>, IPasswordBruteForcePrevention
+        where TUser: IdentityUser<TKey, TUserLogin, TUserRole, TUserClaim>, IPasswordBruteForcePrevention<TKey>
         where TRole: IdentityRole<TKey, TUserRole> 
         where TKey: IEquatable<TKey> 
         where TUserLogin: IdentityUserLogin<TKey>, new() 
