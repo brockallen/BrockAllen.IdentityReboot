@@ -42,9 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FailedLoginAttempts.cs" />
     <Compile Include="IdentityRebootConfiguration.cs" />
     <Compile Include="IdentityRebootUserManager.cs" />
-    <Compile Include="IPasswordBruteForcePrevention.cs" />
     <Compile Include="IPasswordBruteForcePreventionStore.cs" />
     <Compile Include="Messages.Designer.cs">
       <AutoGen>True</AutoGen>

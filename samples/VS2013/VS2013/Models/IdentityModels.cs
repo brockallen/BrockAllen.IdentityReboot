@@ -1,6 +1,5 @@
 ﻿using BrockAllen.IdentityReboot;
 using BrockAllen.IdentityReboot.Ef;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 

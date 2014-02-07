@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace BrockAllen.IdentityReboot {
-    using System;
-    
-    
+namespace BrockAllen.IdentityReboot
+{
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
