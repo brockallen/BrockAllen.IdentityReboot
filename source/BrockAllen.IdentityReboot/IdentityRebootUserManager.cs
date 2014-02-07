@@ -126,45 +126,17 @@ namespace BrockAllen.IdentityReboot
             await this.UpdateAsync(user);
         }
 
-        public async override Task<TUser> FindAsync(string userName, string password)
+        protected override async Task<bool> VerifyPassword(IUserPasswordStore<TUser, TKey> store, TUser user, string password)
         {
-            var user = await base.FindByNameAsync(userName);
-            if (user != null)
+            if (await HasTooManyPasswordFailuresAsync(user))
             {
-                if (await HasTooManyPasswordFailuresAsync(user))
-                {
-                    return default(TUser);
-                }
+                return false;
             }
             
-            var result = await base.FindAsync(userName, password);
-            if (result == null && user != null)
+            var result = await base.VerifyPassword(store, user, password);
+            if (result == false)
             {
                 await RecordPasswordFailureAsync(user);
-            }
-
-            return result;
-        }
-
-        public override async Task<IdentityResult> ChangePasswordAsync(TKey userId, string currentPassword, string newPassword)
-        {
-            var user = await base.FindByIdAsync(userId);
-            if (user != null)
-            {
-                if (await HasTooManyPasswordFailuresAsync(user))
-                {
-                    return IdentityResult.Failed(Messages.TooManyFailedPasswords);
-                }
-            }
-
-            var result = await base.ChangePasswordAsync(userId, currentPassword, newPassword);
-            if (!result.Succeeded)
-            {
-                var validation = await this.PasswordValidator.ValidateAsync(newPassword);
-                if (validation.Succeeded)
-                {
-                    await RecordPasswordFailureAsync(user);
-                }
             }
 
             return result;
