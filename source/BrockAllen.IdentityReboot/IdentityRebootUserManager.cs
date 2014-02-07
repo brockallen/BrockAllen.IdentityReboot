@@ -59,6 +59,9 @@ namespace BrockAllen.IdentityReboot
                 throw new ArgumentNullException("user");
             }
 
+            var hasPassword = await this.HasPasswordAsync(user.Id);
+            if (!hasPassword) return false;
+
             var store = GetPasswordBruteForcePreventionStore();
             var failedLoginAttempts = await store.GetFailedLoginAttemptsAsync(user);
 
@@ -92,6 +95,9 @@ namespace BrockAllen.IdentityReboot
             {
                 throw new ArgumentNullException("user");
             }
+
+            var hasPassword = await this.HasPasswordAsync(user.Id);
+            if (!hasPassword) return;
 
             var store = GetPasswordBruteForcePreventionStore();
             var failedLoginAttempts = await store.GetFailedLoginAttemptsAsync(user);
