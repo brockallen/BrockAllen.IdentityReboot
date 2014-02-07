@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using BrockAllen.IdentityReboot;
+using BrockAllen.IdentityReboot.Ef;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
@@ -21,7 +23,7 @@ namespace IdentitySample.Models
         //Create User=Admin@Admin.com with password=123456 in the Admin role        
         public static void InitializeIdentityForEF(ApplicationDbContext db)
         {
-            var store = new UserStore<ApplicationUser>(db);
+            var store = new IdentityRebootUserStore<ApplicationUser>(db);
             var userManager = new ApplicationUserManager(store);
             var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(db));
             const string name = "admin@admin.com";
@@ -54,7 +56,7 @@ namespace IdentitySample.Models
 
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
 
-    public class ApplicationUserManager : UserManager<ApplicationUser>
+    public class ApplicationUserManager : IdentityRebootUserManager<ApplicationUser>
     {
         public ApplicationUserManager(IUserStore<ApplicationUser> store)
             : base(store)
@@ -63,7 +65,7 @@ namespace IdentitySample.Models
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
         {
-            var manager = new ApplicationUserManager(new UserStore<ApplicationUser>(context.Get<ApplicationDbContext>()));
+            var manager = new ApplicationUserManager(new IdentityRebootUserStore<ApplicationUser>(context.Get<ApplicationDbContext>()));
             // Configure validation logic for usernames
             manager.UserValidator = new UserValidator<ApplicationUser>(manager)
             {
