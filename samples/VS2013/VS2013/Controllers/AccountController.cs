@@ -17,17 +17,16 @@ namespace VS2013.Controllers
     public class AccountController : Controller
     {
         public AccountController()
-            : this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
+            : this(new ApplicationUserManager())
         {
         }
 
-        public AccountController(UserManager<ApplicationUser> userManager)
+        public AccountController(ApplicationUserManager userManager)
         {
             UserManager = userManager;
-            UserManager.PasswordHasher = new AdaptivePasswordHasher();
         }
 
-        public UserManager<ApplicationUser> UserManager { get; private set; }
+        public ApplicationUserManager UserManager { get; private set; }
 
         //
         // GET: /Account/Login

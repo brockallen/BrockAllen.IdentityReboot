@@ -55,7 +55,7 @@ namespace BrockAllen.IdentityReboot
             return store;
         }
 
-        protected async virtual Task<bool> HasTooManyPasswordFailures(TUser user)
+        protected async virtual Task<bool> HasTooManyPasswordFailuresAsync(TUser user)
         {
             if (user == null)
             {
@@ -69,18 +69,27 @@ namespace BrockAllen.IdentityReboot
             if (Configuration.FailedLoginsAllowed <= failedLoginAttempts.Count)
             {
                 result = failedLoginAttempts.LastFailedDate >= UtcNow.Subtract(Configuration.FailedLoginLockout);
+                if (!result)
+                {
+                    // this resets the attempts once outside the lockout window
+                    failedLoginAttempts.Count = 0;
+                    await store.SetFailedLoginAttemptsAsync(user, failedLoginAttempts);
+                    await this.UpdateAsync(user);
+                }
             }
 
             if (result)
             {
+                // record the attempt, but don't update the time
                 failedLoginAttempts.Count++;
                 await store.SetFailedLoginAttemptsAsync(user, failedLoginAttempts);
+                await this.UpdateAsync(user);
             }
 
             return result;
         }
         
-        protected async virtual Task RecordPasswordFailure(TUser user)
+        protected async virtual Task RecordPasswordFailureAsync(TUser user)
         {
             if (user == null)
             {
@@ -102,6 +111,7 @@ namespace BrockAllen.IdentityReboot
             failedLoginAttempts.LastFailedDate = UtcNow;
             
             await store.SetFailedLoginAttemptsAsync(user, failedLoginAttempts);
+            await this.UpdateAsync(user);
         }
 
         public async override Task<TUser> FindAsync(string userName, string password)
@@ -109,7 +119,7 @@ namespace BrockAllen.IdentityReboot
             var user = await base.FindByNameAsync(userName);
             if (user != null)
             {
-                if (await HasTooManyPasswordFailures(user))
+                if (await HasTooManyPasswordFailuresAsync(user))
                 {
                     return default(TUser);
                 }
@@ -118,7 +128,7 @@ namespace BrockAllen.IdentityReboot
             var result = await base.FindAsync(userName, password);
             if (result == null && user != null)
             {
-                await RecordPasswordFailure(user);
+                await RecordPasswordFailureAsync(user);
             }
             return result;
         }
@@ -128,7 +138,7 @@ namespace BrockAllen.IdentityReboot
             var user = await base.FindByIdAsync(userId);
             if (user != null)
             {
-                if (await HasTooManyPasswordFailures(user))
+                if (await HasTooManyPasswordFailuresAsync(user))
                 {
                     return IdentityResult.Failed(Messages.TooManyFailedPasswords);
                 }
@@ -140,7 +150,7 @@ namespace BrockAllen.IdentityReboot
                 var validation = await this.PasswordValidator.ValidateAsync(newPassword);
                 if (validation.Succeeded)
                 {
-                    await RecordPasswordFailure(user);
+                    await RecordPasswordFailureAsync(user);
                 }
             }
             return result;
