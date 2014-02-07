@@ -45,12 +45,7 @@ namespace BrockAllen.IdentityReboot
 
         IPasswordBruteForcePreventionStore<TUser, TKey> GetPasswordBruteForcePreventionStore()
         {
-            var store = this.Store as IPasswordBruteForcePreventionStore<TUser, TKey>;
-            if (store == null)
-            {
-                throw new NotImplementedException(Messages.IPasswordBruteForcePreventionStoreNotImplemented);
-            }
-            return store;
+            return this.Store as IPasswordBruteForcePreventionStore<TUser, TKey>;
         }
 
         protected async virtual Task<bool> HasTooManyPasswordFailuresAsync(TUser user)
@@ -64,6 +59,8 @@ namespace BrockAllen.IdentityReboot
             if (!hasPassword) return false;
 
             var store = GetPasswordBruteForcePreventionStore();
+            if (store == null) return false;
+
             var failedLoginAttempts = await store.GetFailedLoginAttemptsAsync(user);
             if (failedLoginAttempts == null)
             {
@@ -105,6 +102,8 @@ namespace BrockAllen.IdentityReboot
             if (!hasPassword) return;
 
             var store = GetPasswordBruteForcePreventionStore();
+            if (store == null) return;
+
             var failedLoginAttempts = await store.GetFailedLoginAttemptsAsync(user);
             if (failedLoginAttempts == null)
             {
