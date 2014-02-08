@@ -69,7 +69,7 @@ namespace BrockAllen.IdentityReboot
             bool result = false;
             if (Configuration.FailedLoginsAllowed <= failedLoginAttempts.Count)
             {
-                result = failedLoginAttempts.LastFailedDate >= UtcNow.Subtract(Configuration.FailedLoginLockout);
+                result = failedLoginAttempts.LastFailedDate > UtcNow.Subtract(Configuration.FailedLoginLockout);
                 if (!result)
                 {
                     // this resets the attempts once outside the lockout window
