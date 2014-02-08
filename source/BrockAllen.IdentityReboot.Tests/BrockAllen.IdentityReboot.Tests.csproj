@@ -54,6 +54,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AdaptivePasswordHasherTests.cs" />
+    <Compile Include="PasswordBruteForceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
