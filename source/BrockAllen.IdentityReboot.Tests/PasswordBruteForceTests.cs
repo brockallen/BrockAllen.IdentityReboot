@@ -17,7 +17,7 @@ namespace BrockAllen.IdentityReboot.Tests
         public DateTime? LastFailedLogin { get; set; }
     }
 
-    public class TestUserStore : IUserStore<TestUser>, IUserPasswordStore<TestUser>, IPasswordBruteForcePreventionStore<TestUser>
+    public class TestUserStore : IUserStore<TestUser>, IUserPasswordStore<TestUser>, IPasswordBruteForcePreventionStore<TestUser, string>
     {
         List<TestUser> users = new List<TestUser>();
         public Task CreateAsync(TestUser user)
