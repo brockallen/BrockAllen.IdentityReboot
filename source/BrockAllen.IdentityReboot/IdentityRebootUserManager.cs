@@ -74,9 +74,7 @@ namespace BrockAllen.IdentityReboot
                 if (!result)
                 {
                     // this resets the attempts once outside the lockout window
-                    failedLoginAttempts.Count = 0;
-                    await store.SetFailedLoginAttemptsAsync(user, failedLoginAttempts);
-                    await this.UpdateAsync(user);
+                    await ResetPasswordFailureAsync(user);
                 }
             }
 
@@ -89,6 +87,35 @@ namespace BrockAllen.IdentityReboot
             }
 
             return result;
+        }
+
+        protected virtual async Task ResetPasswordFailureAsync(TUser user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
+            var hasPassword = await this.HasPasswordAsync(user.Id);
+            if (!hasPassword) return;
+
+            var store = GetPasswordBruteForcePreventionStore();
+            if (store == null) return;
+
+            var failedLoginAttempts = await store.GetFailedLoginAttemptsAsync(user);
+            if (failedLoginAttempts == null)
+            {
+                failedLoginAttempts = new FailedLoginAttempts();
+            }
+
+            if (failedLoginAttempts.Count != 0 || failedLoginAttempts.LastFailedDate != null)
+            {
+                failedLoginAttempts.Count = 0;
+                failedLoginAttempts.LastFailedDate = null;
+
+                await store.SetFailedLoginAttemptsAsync(user, failedLoginAttempts);
+                await this.UpdateAsync(user);
+            }
         }
         
         protected async virtual Task RecordPasswordFailureAsync(TUser user)
@@ -133,9 +160,37 @@ namespace BrockAllen.IdentityReboot
             }
             
             var result = await base.VerifyPassword(store, user, password);
-            if (result == false)
+            if (result)
+            {
+                await ResetPasswordFailureAsync(user);
+            }
+            else
             {
                 await RecordPasswordFailureAsync(user);
+            }
+
+            return result;
+        }
+
+        public override async Task<bool> VerifyTwoFactorTokenAsync(TKey userId, string twoFactorProvider, string token)
+        {
+            var user = this.FindById(userId);
+            if (user != null && await HasTooManyPasswordFailuresAsync(user))
+            {
+                return false;
+            }
+
+            var result = await base.VerifyTwoFactorTokenAsync(userId, twoFactorProvider, token);
+            if (user != null)
+            {
+                if (result)
+                {
+                    await ResetPasswordFailureAsync(user);
+                }
+                else
+                {
+                    await RecordPasswordFailureAsync(user);
+                }
             }
 
             return result;
