@@ -120,6 +120,12 @@
   <data name="IPasswordBruteForcePreventionStoreNotImplemented" xml:space="preserve">
     <value>The user store does not implement IPasswordBruteForcePreventionStore.</value>
   </data>
+  <data name="ITwoFactorCodeStoreNotImplemented" xml:space="preserve">
+    <value>The user store does not implement ITwoFactorCodeStore.</value>
+  </data>
+  <data name="IUserManagerSupportsTwoFactorAuthStoreNotImplemented" xml:space="preserve">
+    <value>The UserManager does not implement IUserManagerSupportsTwoFactorAuthStore.</value>
+  </data>
   <data name="TooManyFailedPasswords" xml:space="preserve">
     <value>Too many failed password attempts.</value>
   </data>

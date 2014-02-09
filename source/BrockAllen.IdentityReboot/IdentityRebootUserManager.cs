@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 
 namespace BrockAllen.IdentityReboot
 {
-    public class IdentityRebootUserManager<TUser, TKey> : UserManager<TUser, TKey>
+    public class IdentityRebootUserManager<TUser, TKey> : 
+        UserManager<TUser, TKey>,
+        IUserManagerSupportsTwoFactorAuthStore<TUser, TKey>
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
     {
@@ -194,6 +196,27 @@ namespace BrockAllen.IdentityReboot
             }
 
             return result;
+        }
+
+        bool IUserManagerSupportsTwoFactorAuthStore<TUser, TKey>.IsSupported()
+        {
+            return this.Store is ITwoFactorCodeStore<TUser, TKey>;
+        }
+
+        Task<TwoFactorAuthData> IUserManagerSupportsTwoFactorAuthStore<TUser, TKey>.GetTwoFactorAuthDataAsync(TUser user)
+        {
+            var store = this.Store as ITwoFactorCodeStore<TUser, TKey>;
+            if (store == null) throw new InvalidOperationException(Messages.ITwoFactorCodeStoreNotImplemented);
+
+            return store.GetTwoFactorAuthDataAsync(user);
+        }
+
+        Task IUserManagerSupportsTwoFactorAuthStore<TUser, TKey>.SetTwoFactorAuthDataAsync(TUser user, TwoFactorAuthData data)
+        {
+            var store = this.Store as ITwoFactorCodeStore<TUser, TKey>;
+            if (store == null) throw new InvalidOperationException(Messages.ITwoFactorCodeStoreNotImplemented);
+
+            return store.SetTwoFactorAuthDataAsync(user, data);
         }
     }
 

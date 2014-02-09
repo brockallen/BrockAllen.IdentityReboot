@@ -59,6 +59,7 @@
     <Compile Include="IdentityRebootUser.cs" />
     <Compile Include="IdentityRebootUserStore.cs" />
     <Compile Include="IPasswordBruteForcePrevention.cs" />
+    <Compile Include="ITwoFactorCode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

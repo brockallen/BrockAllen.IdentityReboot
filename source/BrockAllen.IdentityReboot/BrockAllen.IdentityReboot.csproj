@@ -43,18 +43,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FailedLoginAttempts.cs" />
+    <Compile Include="BruteForce\FailedLoginAttempts.cs" />
     <Compile Include="IdentityRebootConfiguration.cs" />
     <Compile Include="IdentityRebootUserManager.cs" />
-    <Compile Include="IPasswordBruteForcePreventionStore.cs" />
+    <Compile Include="BruteForce\IPasswordBruteForcePreventionStore.cs" />
     <Compile Include="Messages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Messages.resx</DependentUpon>
     </Compile>
     <Compile Include="System.Web.Helpers.Crypto.cs" />
-    <Compile Include="AdaptivePasswordHasher.cs" />
+    <Compile Include="PasswordHasher\AdaptivePasswordHasher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TwoFactorAuth\ITwoFactorCodeStore.cs" />
+    <Compile Include="TwoFactorAuth\IUserManagerSupportsTwoFactorAuthStore.cs" />
+    <Compile Include="TwoFactorAuth\MobileStoredTwoFactorCodeProvider.cs" />
+    <Compile Include="TwoFactorAuth\TwoFactorAuthData.cs" />
+    <Compile Include="TwoFactorAuth\StoredTwoFactorCodeProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Messages.resx">
