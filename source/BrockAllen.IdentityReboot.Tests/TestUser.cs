@@ -12,11 +12,20 @@ namespace BrockAllen.IdentityReboot.Tests
         public string Id { get; set; }
         public string UserName { get; set; }
         public string PasswordHash { get; set; }
+        public string SecurityStamp { get; set; }
+        public string MobilePhone { get; set; }
+        public bool MobilePhoneConfirmed { get; set; }
+
         public int FailedLoginCount { get; set; }
         public DateTime? LastFailedLogin { get; set; }
     }
 
-    public class TestUserStore : IUserStore<TestUser>, IUserPasswordStore<TestUser>, IPasswordBruteForcePreventionStore<TestUser, string>
+    public class TestUserStore : 
+        IUserStore<TestUser>, 
+        IUserPasswordStore<TestUser>, 
+        IUserSecurityStampStore<TestUser>,
+        IUserPhoneNumberStore<TestUser>,
+        IPasswordBruteForcePreventionStore<TestUser, string>
     {
         List<TestUser> users = new List<TestUser>();
         public Task CreateAsync(TestUser user)
@@ -78,6 +87,39 @@ namespace BrockAllen.IdentityReboot.Tests
         public Task SetPasswordHashAsync(TestUser user, string passwordHash)
         {
             user.PasswordHash = passwordHash;
+            return Task.FromResult(0);
+        }
+
+        public Task<string> GetSecurityStampAsync(TestUser user)
+        {
+            return Task.FromResult(user.SecurityStamp);
+        }
+
+        public Task SetSecurityStampAsync(TestUser user, string stamp)
+        {
+            user.SecurityStamp = stamp;
+            return Task.FromResult(0);
+        }
+
+        public Task<string> GetPhoneNumberAsync(TestUser user)
+        {
+            return Task.FromResult(user.MobilePhone);
+        }
+
+        public Task<bool> GetPhoneNumberConfirmedAsync(TestUser user)
+        {
+            return Task.FromResult(user.MobilePhoneConfirmed);
+        }
+
+        public Task SetPhoneNumberAsync(TestUser user, string phoneNumber)
+        {
+            user.MobilePhone = phoneNumber;
+            return Task.FromResult(0);
+        }
+
+        public Task SetPhoneNumberConfirmedAsync(TestUser user, bool confirmed)
+        {
+            user.MobilePhoneConfirmed = confirmed;
             return Task.FromResult(0);
         }
     }
