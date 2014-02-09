@@ -82,7 +82,7 @@ namespace IdentitySample.Controllers
             if (user != null)
             {
                 // To exercise the flow without actually sending codes, uncomment the following line
-                //ViewBag.Status = "For DEMO purposes the current " + provider + " code is: " + await UserManager.GenerateTwoFactorTokenAsync(user.Id, provider);
+                ViewBag.Status = "For DEMO purposes the current " + provider + " code is: " + await UserManager.GenerateTwoFactorTokenAsync(user.Id, provider);
             }
             return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl });
         }

