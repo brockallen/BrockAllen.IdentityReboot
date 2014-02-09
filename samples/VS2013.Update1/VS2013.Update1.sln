@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrockAllen.IdentityReboot.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VS2013.Update1", "VS2013.Update1\VS2013.Update1.csproj", "{35919BFA-9B70-445C-A554-0FBABA092E8B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrockAllen.IdentityReboot.Tests", "..\..\source\BrockAllen.IdentityReboot.Tests\BrockAllen.IdentityReboot.Tests.csproj", "{C8C5832D-9D4A-4054-90BF-1BAA5C4D8C98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{35919BFA-9B70-445C-A554-0FBABA092E8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35919BFA-9B70-445C-A554-0FBABA092E8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35919BFA-9B70-445C-A554-0FBABA092E8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8C5832D-9D4A-4054-90BF-1BAA5C4D8C98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8C5832D-9D4A-4054-90BF-1BAA5C4D8C98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8C5832D-9D4A-4054-90BF-1BAA5C4D8C98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8C5832D-9D4A-4054-90BF-1BAA5C4D8C98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

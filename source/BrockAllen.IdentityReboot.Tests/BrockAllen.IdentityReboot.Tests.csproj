@@ -57,6 +57,7 @@
     <Compile Include="AdaptivePasswordHasherTests.cs" />
     <Compile Include="PasswordBruteForceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestUser.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BrockAllen.IdentityReboot\BrockAllen.IdentityReboot.csproj">
