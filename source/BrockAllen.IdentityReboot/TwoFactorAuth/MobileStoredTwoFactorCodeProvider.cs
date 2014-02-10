@@ -15,21 +15,6 @@ namespace BrockAllen.IdentityReboot
     {
         public string MessageFormat { get; set; }
 
-        public MobileStoredTwoFactorCodeProvider()
-            : base()
-        {
-        }
-        
-        public MobileStoredTwoFactorCodeProvider(int digits)
-            : base(digits)
-        {
-        }
-
-        public MobileStoredTwoFactorCodeProvider(int digits, int hashingIterations, TimeSpan validityDuration)
-            : base(digits, hashingIterations, validityDuration)
-        {
-        }
-
         public override async Task<bool> IsValidProviderForUserAsync(UserManager<TUser, TKey> manager, TUser user)
         {
             var phone = await manager.GetPhoneNumberAsync(user.Id);
@@ -42,5 +27,11 @@ namespace BrockAllen.IdentityReboot
         {
             await manager.SendSmsAsync(user.Id, String.Format(MessageFormat, code));
         }
+    }
+
+    public class MobileStoredTwoFactorCodeProvider<TUser> : 
+        MobileStoredTwoFactorCodeProvider<TUser, string>
+        where TUser : class, IUser<string>
+    {
     }
 }

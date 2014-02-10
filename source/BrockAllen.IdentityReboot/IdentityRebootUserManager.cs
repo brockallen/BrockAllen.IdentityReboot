@@ -198,6 +198,18 @@ namespace BrockAllen.IdentityReboot
             return result;
         }
 
+        public override async Task<string> GenerateChangePhoneNumberTokenAsync(TKey userId, string phoneNumber)
+        {
+            var provider = new StoredTwoFactorCodeProvider<TUser, TKey>();
+            return await provider.GenerateAsync("changephone" + phoneNumber, this, this.FindById(userId));
+        }
+
+        public override async Task<bool> VerifyChangePhoneNumberTokenAsync(TKey userId, string token, string phoneNumber)
+        {
+            var provider = new StoredTwoFactorCodeProvider<TUser, TKey>();
+            return await provider.ValidateAsync("changephone" + phoneNumber, token, this, this.FindById(userId));
+        }
+
         bool IUserManagerSupportsTwoFactorAuthStore<TUser, TKey>.IsSupported()
         {
             return this.Store is ITwoFactorCodeStore<TUser, TKey>;

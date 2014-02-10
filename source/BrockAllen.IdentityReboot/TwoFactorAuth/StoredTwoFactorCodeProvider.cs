@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BrockAllen.IdentityReboot
 {
-    public abstract class StoredTwoFactorCodeProvider<TUser, TKey> : IUserTokenProvider<TUser, TKey>
+    public class StoredTwoFactorCodeProvider<TUser, TKey> : IUserTokenProvider<TUser, TKey>
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
     {
@@ -17,20 +17,15 @@ namespace BrockAllen.IdentityReboot
         const int DefaultHashIterations = 10000;
         static readonly TimeSpan DefaultValidityDuration = TimeSpan.FromMinutes(5);
 
-        int digits;
-        int hashingIterations;
-        TimeSpan validityDuration;
-
-        protected abstract Task SendCode(UserManager<TUser, TKey> manager, TUser user, string code);
+        public int Digits { get; set; }
+        public int HashingIterations { get; set; }
+        public TimeSpan ValidityDuration { get; set; }
 
         public StoredTwoFactorCodeProvider()
-            : this(DefaultDigitLength, DefaultHashIterations, DefaultValidityDuration)
         {
-        }
-        
-        public StoredTwoFactorCodeProvider(int digits)
-            : this(digits, DefaultHashIterations, DefaultValidityDuration)
-        {
+            Digits = DefaultDigitLength;
+            HashingIterations = DefaultHashIterations;
+            ValidityDuration = DefaultValidityDuration;
         }
 
         public StoredTwoFactorCodeProvider(int digits, int hashingIterations, TimeSpan validityDuration)
@@ -38,13 +33,18 @@ namespace BrockAllen.IdentityReboot
             // 18 is good size for a long
             if (digits > 18) digits = 18;
             if (digits <= 0) digits = DefaultDigitLength;
-            
+
             if (hashingIterations <= 0) hashingIterations = DefaultHashIterations;
             if (validityDuration <= TimeSpan.Zero) validityDuration = DefaultValidityDuration;
 
-            this.digits = digits;
-            this.hashingIterations = hashingIterations;
-            this.validityDuration = validityDuration;
+            this.Digits = digits;
+            this.HashingIterations = hashingIterations;
+            this.ValidityDuration = validityDuration;
+        }
+
+        protected virtual Task SendCode(UserManager<TUser, TKey> manager, TUser user, string code) 
+        {
+            return Task.FromResult(0);
         }
 
         public async Task<string> GenerateAsync(string purpose, UserManager<TUser, TKey> manager, TUser user)
@@ -55,15 +55,18 @@ namespace BrockAllen.IdentityReboot
 
             var bytes = Crypto.GenerateSaltInternal(sizeof(long));
             var val = BitConverter.ToInt64(bytes, 0);
-            var mod = (int)Math.Pow(10, digits);
+            var mod = (int)Math.Pow(10, Digits);
             val %= mod;
             val = Math.Abs(val);
 
-            var code = val.ToString("D" + digits);
-            
-            var hashedCode = Crypto.HashPassword(purpose + code, this.hashingIterations);
+            var code = val.ToString("D" + Digits);
+
+            var hasher = new AdaptivePasswordHasher(this.HashingIterations);
+            var hashedCode = hasher.HashPassword(purpose + code);
+
             var data = new TwoFactorAuthData { HashedCode = hashedCode, DateIssued = UtcNow };
             await twoFactAuthManager.SetTwoFactorAuthDataAsync(user, data);
+            await manager.UpdateAsync(user);
 
             await SendCode(manager, user, code);
 
@@ -85,9 +88,10 @@ namespace BrockAllen.IdentityReboot
             var data = await twoFactAuthManager.GetTwoFactorAuthDataAsync(user);
             if (data != null && 
                 data.HashedCode != null &&
-                UtcNow < data.DateIssued.Add(this.validityDuration))
+                UtcNow < data.DateIssued.Add(this.ValidityDuration))
             {
-                return Crypto.VerifyHashedPassword(data.HashedCode, purpose + token);
+                var hasher = new AdaptivePasswordHasher(this.HashingIterations);
+                return hasher.VerifyHashedPassword(data.HashedCode, purpose + token) != PasswordVerificationResult.Failed;
             }
 
             return false;
