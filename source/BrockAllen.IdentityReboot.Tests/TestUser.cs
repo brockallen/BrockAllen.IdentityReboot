@@ -142,4 +142,17 @@ namespace BrockAllen.IdentityReboot.Tests
         }
     }
 
+    public class TestStoredTwoFactorCodeProvider : StoredTwoFactorCodeProvider<TestUser, string>
+    {
+        public DateTime? now;
+
+        protected override DateTime UtcNow
+        {
+            get
+            {
+                return now ?? DateTime.UtcNow;
+            }
+        }
+    }
+
 }

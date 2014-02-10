@@ -9,46 +9,26 @@ using System.Threading.Tasks;
 namespace BrockAllen.IdentityReboot.Tests
 {
     [TestClass]
-    public class TwoFactorAuthBruteForceTests
+    public class TwoFactorAuthBruteForceTests : IdentityRebootTestBase
     {
-        IdentityRebootConfiguration configuration;
-        TestIdentityRebootUserManager subject;
-        TestUserStore store;
-        TestUser user;
-
-        const string username = "test";
-        const string password = "pass123";
         const string provider = "mobile";
 
         [TestInitialize]
-        public void Init()
+        public override void Init()
         {
-            store = new TestUserStore();
-            configuration = new IdentityRebootConfiguration()
-            {
-                FailedLoginsAllowed = 5, 
-                PasswordHashIterations = 100, 
-                FailedLoginLockout = TimeSpan.FromMinutes(5)
-            };
-            subject = new TestIdentityRebootUserManager(store, configuration);
-            subject.RegisterTwoFactorProvider(provider, new PhoneNumberTokenProvider<TestUser>
+            base.Init();
+            manager.RegisterTwoFactorProvider(provider, new PhoneNumberTokenProvider<TestUser>
             {
                 MessageFormat = "Your security code is: {0}"
             });
-
-            user = new TestUser(){
-                UserName = username
-            };
-            var result = subject.Create(user, password);
-            Assert.IsTrue(result.Succeeded);
         }
 
         [TestMethod]
         public void CorrectCode_NoFailedAttempts()
         {
-            var acct = subject.Find(username, password);
-            var token = subject.GenerateTwoFactorToken(user.Id, provider);
-            var result = subject.VerifyTwoFactorToken(user.Id, provider, token);
+            var acct = manager.Find(username, password);
+            var token = manager.GenerateTwoFactorToken(user.Id, provider);
+            var result = manager.VerifyTwoFactorToken(user.Id, provider, token);
             
             Assert.IsTrue(result);
             Assert.AreEqual(0, user.FailedLoginCount);
@@ -59,19 +39,19 @@ namespace BrockAllen.IdentityReboot.Tests
         public void InvalidCode_RecordFailedLoginAttempts()
         {
             var now = new DateTime(2000, 2, 3);
-            subject.now = now;
+            manager.now = now;
 
-            var acct = subject.Find(username, password);
+            var acct = manager.Find(username, password);
             Assert.IsNotNull(acct);
-            var token = subject.GenerateTwoFactorToken(user.Id, provider);
-            var result = subject.VerifyTwoFactorToken(user.Id, provider, "abc");
+            var token = manager.GenerateTwoFactorToken(user.Id, provider);
+            var result = manager.VerifyTwoFactorToken(user.Id, provider, "abc");
             Assert.IsFalse(result);
             Assert.AreEqual(1, user.FailedLoginCount);
             Assert.AreEqual(now, user.LastFailedLogin);
 
-            result = subject.VerifyTwoFactorToken(user.Id, provider, "abc");
+            result = manager.VerifyTwoFactorToken(user.Id, provider, "abc");
             Assert.IsFalse(result);
-            result = subject.VerifyTwoFactorToken(user.Id, provider, "abc");
+            result = manager.VerifyTwoFactorToken(user.Id, provider, "abc");
             Assert.IsFalse(result);
             
             Assert.AreEqual(3, user.FailedLoginCount);
@@ -81,52 +61,52 @@ namespace BrockAllen.IdentityReboot.Tests
         [TestMethod]
         public void AfterMaxAttempts_AccountLockedOut()
         {
-            subject.now = new DateTime(2000, 2, 3);
+            manager.now = new DateTime(2000, 2, 3);
             
-            var acct = subject.Find(username, password);
+            var acct = manager.Find(username, password);
             Assert.IsNotNull(acct);
-            var token = subject.GenerateTwoFactorToken(user.Id, provider);
+            var token = manager.GenerateTwoFactorToken(user.Id, provider);
             for (var i = 0; i < configuration.FailedLoginsAllowed; i++)
             {
-                Assert.IsFalse(subject.VerifyTwoFactorToken(user.Id, provider, "abc"));
+                Assert.IsFalse(manager.VerifyTwoFactorToken(user.Id, provider, "abc"));
             }
             
-            Assert.IsFalse(subject.VerifyTwoFactorToken(user.Id, provider, token));
+            Assert.IsFalse(manager.VerifyTwoFactorToken(user.Id, provider, token));
         }
 
         [TestMethod]
         public void AfterLockoutDuration_UserCanLogin()
         {
-            var acct = subject.Find(username, password);
+            var acct = manager.Find(username, password);
             Assert.IsNotNull(acct);
 
             user.FailedLoginCount = configuration.FailedLoginsAllowed;
             user.LastFailedLogin = new DateTime(2000, 2, 3);
-            subject.now = user.LastFailedLogin;
+            manager.now = user.LastFailedLogin;
 
-            var token = subject.GenerateTwoFactorToken(user.Id, provider);
-            Assert.IsFalse(subject.VerifyTwoFactorToken(user.Id, provider, token));
+            var token = manager.GenerateTwoFactorToken(user.Id, provider);
+            Assert.IsFalse(manager.VerifyTwoFactorToken(user.Id, provider, token));
 
-            subject.now = user.LastFailedLogin + configuration.FailedLoginLockout;
-            token = subject.GenerateTwoFactorToken(user.Id, provider);
-            Assert.IsTrue(subject.VerifyTwoFactorToken(user.Id, provider, token));
+            manager.now = user.LastFailedLogin + configuration.FailedLoginLockout;
+            token = manager.GenerateTwoFactorToken(user.Id, provider);
+            Assert.IsTrue(manager.VerifyTwoFactorToken(user.Id, provider, token));
         }
 
         [TestMethod]
         public void AfterLockoutDuration_CountIsReset()
         {
-            var acct = subject.Find(username, password);
+            var acct = manager.Find(username, password);
             Assert.IsNotNull(acct);
 
             user.FailedLoginCount = configuration.FailedLoginsAllowed;
             user.LastFailedLogin = new DateTime(2000, 2, 3);
-            subject.now = user.LastFailedLogin + configuration.FailedLoginLockout;
+            manager.now = user.LastFailedLogin + configuration.FailedLoginLockout;
 
-            var token = subject.GenerateTwoFactorToken(user.Id, provider);
-            Assert.IsFalse(subject.VerifyTwoFactorToken(user.Id, provider, "abc"));
+            var token = manager.GenerateTwoFactorToken(user.Id, provider);
+            Assert.IsFalse(manager.VerifyTwoFactorToken(user.Id, provider, "abc"));
             
             Assert.AreEqual(1, user.FailedLoginCount);
-            Assert.AreEqual(subject.now, user.LastFailedLogin);
+            Assert.AreEqual(manager.now, user.LastFailedLogin);
         }
     }
 }

@@ -28,20 +28,6 @@ namespace BrockAllen.IdentityReboot
             ValidityDuration = DefaultValidityDuration;
         }
 
-        public StoredTwoFactorCodeProvider(int digits, int hashingIterations, TimeSpan validityDuration)
-        {
-            // 18 is good size for a long
-            if (digits > 18) digits = 18;
-            if (digits <= 0) digits = DefaultDigitLength;
-
-            if (hashingIterations <= 0) hashingIterations = DefaultHashIterations;
-            if (validityDuration <= TimeSpan.Zero) validityDuration = DefaultValidityDuration;
-
-            this.Digits = digits;
-            this.HashingIterations = hashingIterations;
-            this.ValidityDuration = validityDuration;
-        }
-
         protected virtual Task SendCode(UserManager<TUser, TKey> manager, TUser user, string code) 
         {
             return Task.FromResult(0);
@@ -101,5 +87,10 @@ namespace BrockAllen.IdentityReboot
         {
             get { return DateTime.UtcNow; }
         }
+    }
+
+    public class StoredTwoFactorCodeProvider<TUser> : StoredTwoFactorCodeProvider<TUser, string>
+        where TUser : class, IUser<string>
+    {
     }
 }
