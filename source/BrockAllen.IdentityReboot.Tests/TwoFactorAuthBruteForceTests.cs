@@ -66,7 +66,7 @@ namespace BrockAllen.IdentityReboot.Tests
             var acct = manager.Find(username, password);
             Assert.IsNotNull(acct);
             var token = manager.GenerateTwoFactorToken(user.Id, provider);
-            for (var i = 0; i < configuration.FailedLoginsAllowed; i++)
+            for (var i = 0; i < manager.FailedLoginsAllowed; i++)
             {
                 Assert.IsFalse(manager.VerifyTwoFactorToken(user.Id, provider, "abc"));
             }
@@ -80,14 +80,14 @@ namespace BrockAllen.IdentityReboot.Tests
             var acct = manager.Find(username, password);
             Assert.IsNotNull(acct);
 
-            user.FailedLoginCount = configuration.FailedLoginsAllowed;
+            user.FailedLoginCount = manager.FailedLoginsAllowed;
             user.LastFailedLogin = new DateTime(2000, 2, 3);
             manager.now = user.LastFailedLogin;
 
             var token = manager.GenerateTwoFactorToken(user.Id, provider);
             Assert.IsFalse(manager.VerifyTwoFactorToken(user.Id, provider, token));
 
-            manager.now = user.LastFailedLogin + configuration.FailedLoginLockout;
+            manager.now = user.LastFailedLogin + manager.FailedLoginLockout;
             token = manager.GenerateTwoFactorToken(user.Id, provider);
             Assert.IsTrue(manager.VerifyTwoFactorToken(user.Id, provider, token));
         }
@@ -98,9 +98,9 @@ namespace BrockAllen.IdentityReboot.Tests
             var acct = manager.Find(username, password);
             Assert.IsNotNull(acct);
 
-            user.FailedLoginCount = configuration.FailedLoginsAllowed;
+            user.FailedLoginCount = manager.FailedLoginsAllowed;
             user.LastFailedLogin = new DateTime(2000, 2, 3);
-            manager.now = user.LastFailedLogin + configuration.FailedLoginLockout;
+            manager.now = user.LastFailedLogin + manager.FailedLoginLockout;
 
             var token = manager.GenerateTwoFactorToken(user.Id, provider);
             Assert.IsFalse(manager.VerifyTwoFactorToken(user.Id, provider, "abc"));

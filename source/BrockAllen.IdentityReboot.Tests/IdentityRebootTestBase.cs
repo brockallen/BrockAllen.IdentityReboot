@@ -10,7 +10,6 @@ namespace BrockAllen.IdentityReboot.Tests
 {
     public class IdentityRebootTestBase
     {
-        protected IdentityRebootConfiguration configuration;
         protected TestIdentityRebootUserManager manager;
         protected TestUserStore store;
         protected TestUser user;
@@ -22,7 +21,7 @@ namespace BrockAllen.IdentityReboot.Tests
         public virtual void Init()
         {
             store = new TestUserStore();
-            configuration = new IdentityRebootConfiguration()
+            var configuration = new IdentityRebootConfiguration()
             {
                 FailedLoginsAllowed = 5,
                 PasswordHashIterations = 100,

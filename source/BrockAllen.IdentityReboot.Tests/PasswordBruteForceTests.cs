@@ -42,7 +42,7 @@ namespace BrockAllen.IdentityReboot.Tests
         {
             var acct = manager.Find(username, password);
             Assert.IsNotNull(acct);
-            for (var i = 0; i < configuration.FailedLoginsAllowed; i++)
+            for (var i = 0; i < manager.FailedLoginsAllowed; i++)
             {
                 manager.Find(username, "foo");
             }
@@ -53,14 +53,14 @@ namespace BrockAllen.IdentityReboot.Tests
         [TestMethod]
         public void AfterLockoutDuration_UserCanLogin()
         {
-            user.FailedLoginCount = configuration.FailedLoginsAllowed;
+            user.FailedLoginCount = manager.FailedLoginsAllowed;
             user.LastFailedLogin = new DateTime(2000, 2, 3);
             manager.now = user.LastFailedLogin;
 
             var acct = manager.Find(username, password);
             Assert.IsNull(acct);
 
-            manager.now = user.LastFailedLogin + configuration.FailedLoginLockout;
+            manager.now = user.LastFailedLogin + manager.FailedLoginLockout;
             acct = manager.Find(username, password);
             Assert.IsNotNull(acct);
         }
@@ -68,9 +68,9 @@ namespace BrockAllen.IdentityReboot.Tests
         [TestMethod]
         public void AfterLockoutDuration_CountIsReset()
         {
-            user.FailedLoginCount = configuration.FailedLoginsAllowed;
+            user.FailedLoginCount = manager.FailedLoginsAllowed;
             user.LastFailedLogin = new DateTime(2000, 2, 3);
-            manager.now = user.LastFailedLogin + configuration.FailedLoginLockout;
+            manager.now = user.LastFailedLogin + manager.FailedLoginLockout;
 
             var acct = manager.Find(username, "foo");
             Assert.AreEqual(1, user.FailedLoginCount);

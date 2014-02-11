@@ -10,7 +10,9 @@ namespace BrockAllen.IdentityReboot
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
     {
-        public IdentityRebootConfiguration Configuration { get; private set; }
+        public int PasswordHashIterations { get; set; }
+        public int FailedLoginsAllowed { get; set; }
+        public TimeSpan FailedLoginLockout { get; set; }
 
         public IdentityRebootUserManager(IUserStore<TUser, TKey> store)
             : this(store, null)
@@ -33,7 +35,10 @@ namespace BrockAllen.IdentityReboot
                 config.FailedLoginsAllowed = 5;
             }
             
-            this.Configuration = config;
+            this.PasswordHashIterations = config.PasswordHashIterations;
+            this.FailedLoginsAllowed = config.FailedLoginsAllowed;
+            this.FailedLoginLockout = config.FailedLoginLockout;
+            
             this.PasswordHasher = new AdaptivePasswordHasher(config.PasswordHashIterations);
         }
 
@@ -70,9 +75,9 @@ namespace BrockAllen.IdentityReboot
             }
 
             bool result = false;
-            if (Configuration.FailedLoginsAllowed <= failedLoginAttempts.Count)
+            if (this.FailedLoginsAllowed <= failedLoginAttempts.Count)
             {
-                result = failedLoginAttempts.LastFailedDate > UtcNow.Subtract(Configuration.FailedLoginLockout);
+                result = failedLoginAttempts.LastFailedDate > UtcNow.Subtract(this.FailedLoginLockout);
                 if (!result)
                 {
                     // this resets the attempts once outside the lockout window
