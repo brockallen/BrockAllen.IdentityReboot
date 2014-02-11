@@ -10,7 +10,6 @@ namespace BrockAllen.IdentityReboot
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
     {
-        public int PasswordHashIterations { get; set; }
         public int FailedLoginsAllowed { get; set; }
         public TimeSpan FailedLoginLockout { get; set; }
 
@@ -35,7 +34,6 @@ namespace BrockAllen.IdentityReboot
                 config.FailedLoginsAllowed = 5;
             }
             
-            this.PasswordHashIterations = config.PasswordHashIterations;
             this.FailedLoginsAllowed = config.FailedLoginsAllowed;
             this.FailedLoginLockout = config.FailedLoginLockout;
             
