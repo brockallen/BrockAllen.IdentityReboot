@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace BrockAllen.IdentityReboot
-{
-
-
+namespace BrockAllen.IdentityReboot {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -66,6 +66,24 @@ namespace BrockAllen.IdentityReboot
         internal static string IPasswordBruteForcePreventionStoreNotImplemented {
             get {
                 return ResourceManager.GetString("IPasswordBruteForcePreventionStoreNotImplemented", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The user store does not implement ITwoFactorCodeStore..
+        /// </summary>
+        internal static string ITwoFactorCodeStoreNotImplemented {
+            get {
+                return ResourceManager.GetString("ITwoFactorCodeStoreNotImplemented", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The UserManager does not implement IUserManagerSupportsTwoFactorAuthStore..
+        /// </summary>
+        internal static string IUserManagerSupportsTwoFactorAuthStoreNotImplemented {
+            get {
+                return ResourceManager.GetString("IUserManagerSupportsTwoFactorAuthStoreNotImplemented", resourceCulture);
             }
         }
         
