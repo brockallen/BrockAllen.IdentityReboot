@@ -10,6 +10,9 @@ namespace BrockAllen.IdentityReboot
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
     {
+        const int DefailtFailedLoginsAllowed = 5;
+        static readonly TimeSpan DefaultFailedLoginLockout = TimeSpan.FromMinutes(5);
+
         public int FailedLoginsAllowed { get; set; }
         public TimeSpan FailedLoginLockout { get; set; }
 
@@ -25,13 +28,13 @@ namespace BrockAllen.IdentityReboot
             {
                 config = new IdentityRebootConfiguration()
                 {
-                    FailedLoginLockout = TimeSpan.FromMinutes(5)
+                    FailedLoginLockout = DefaultFailedLoginLockout
                 };
             }
 
             if (config.FailedLoginsAllowed <= 0)
             {
-                config.FailedLoginsAllowed = 5;
+                config.FailedLoginsAllowed = DefailtFailedLoginsAllowed;
             }
             
             this.FailedLoginsAllowed = config.FailedLoginsAllowed;
