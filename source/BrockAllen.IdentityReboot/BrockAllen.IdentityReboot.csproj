@@ -46,7 +46,7 @@
     <Compile Include="BruteForce\FailedLoginAttempts.cs" />
     <Compile Include="IdentityRebootConfiguration.cs" />
     <Compile Include="IdentityRebootUserManager.cs" />
-    <Compile Include="BruteForce\IPasswordBruteForcePreventionStore.cs" />
+    <Compile Include="BruteForce\IBruteForcePreventionStore.cs" />
     <Compile Include="Messages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

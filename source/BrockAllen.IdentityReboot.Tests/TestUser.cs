@@ -25,7 +25,7 @@ namespace BrockAllen.IdentityReboot.Tests
         IUserPasswordStore<TestUser>, 
         IUserSecurityStampStore<TestUser>,
         IUserPhoneNumberStore<TestUser>,
-        IPasswordBruteForcePreventionStore<TestUser, string>
+        IBruteForcePreventionStore<TestUser, string>
     {
         List<TestUser> users = new List<TestUser>();
         public Task CreateAsync(TestUser user)

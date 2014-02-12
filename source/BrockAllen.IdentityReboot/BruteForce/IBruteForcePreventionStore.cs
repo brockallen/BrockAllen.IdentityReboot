@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace BrockAllen.IdentityReboot
 {
-    public interface IPasswordBruteForcePreventionStore<TUser, TKey> : IUserStore<TUser, TKey>
+    public interface IBruteForcePreventionStore<TUser, TKey> : IUserStore<TUser, TKey>
         where TUser : class, IUser<TKey>
     {
         Task<FailedLoginAttempts> GetFailedLoginAttemptsAsync(TUser user);

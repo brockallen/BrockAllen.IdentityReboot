@@ -8,7 +8,7 @@ namespace BrockAllen.IdentityReboot.Ef
 {
     public class IdentityRebootUserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : 
         UserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim>, 
-        IPasswordBruteForcePreventionStore<TUser, TKey>,
+        IBruteForcePreventionStore<TUser, TKey>,
         ITwoFactorCodeStore<TUser, TKey>
         where TUser : IdentityUser<TKey, TUserLogin, TUserRole, TUserClaim>, IPasswordBruteForcePrevention<TKey>, ITwoFactorCode<TKey>
         where TRole: IdentityRole<TKey, TUserRole> 

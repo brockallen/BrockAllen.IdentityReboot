@@ -51,9 +51,9 @@ namespace BrockAllen.IdentityReboot
             }
         }
 
-        IPasswordBruteForcePreventionStore<TUser, TKey> GetPasswordBruteForcePreventionStore()
+        IBruteForcePreventionStore<TUser, TKey> GetPasswordBruteForcePreventionStore()
         {
-            return this.Store as IPasswordBruteForcePreventionStore<TUser, TKey>;
+            return this.Store as IBruteForcePreventionStore<TUser, TKey>;
         }
 
         protected async virtual Task<bool> HasTooManyPasswordFailuresAsync(TUser user)
