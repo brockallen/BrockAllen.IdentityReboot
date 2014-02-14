@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>BrockAllen.IdentityReboot</id>
+    <version>1.0.0-beta1</version>
+    <authors>BrockAllen</authors>
+    <owners>BrockAllen</owners>
+    <licenseUrl>https://raw.github.com/brockallen/BrockAllen.IdentityReboot/master/license.txt</licenseUrl>
+    <projectUrl>https://github.com/brockallen/BrockAllen.IdentityReboot</projectUrl>
+    <iconUrl>http://0.gravatar.com/avatar/f17c1816a6f9bff29a515c75b950460a?s=128&amp;d=mm&amp;r=G</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>IdentityReboot is a set of extensions to ASP.NET Identity to improve security.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2014</copyright>
+
+    <tags>ASP.NET Identity Password Management Two Factor Authentication</tags>
+
+    <frameworkAssemblies>
+    </frameworkAssemblies>
+
+    <dependencies>
+      <dependency id="Microsoft.AspNet.Identity.Core" version="2.0.0-beta1-140208" />
+    </dependencies>
+  </metadata>
+</package>
