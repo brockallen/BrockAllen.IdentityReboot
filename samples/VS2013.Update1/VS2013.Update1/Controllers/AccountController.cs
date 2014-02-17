@@ -82,7 +82,7 @@ namespace IdentitySample.Controllers
             if (user != null)
             {
                 // To exercise the flow without actually sending codes, uncomment the following line
-                ViewBag.Status = "For DEMO purposes the current " + provider + " code is: " + await UserManager.GenerateTwoFactorTokenAsync(user.Id, provider);
+                //ViewBag.Status = "For DEMO purposes the current " + provider + " code is: " + await UserManager.GenerateTwoFactorTokenAsync(user.Id, provider);
             }
             return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl });
         }
@@ -195,7 +195,7 @@ namespace IdentitySample.Controllers
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                 await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
                 ViewBag.Link = callbackUrl;
-                return View("DisplayEmail");
+                return View("ForgotPasswordConfirmation");
             }
 
             // If we got this far, something failed, redisplay form
@@ -311,6 +311,7 @@ namespace IdentitySample.Controllers
                 }
 
                 // See IdentityConfig.cs to plug in Email/SMS services to actually send the code
+                await UserManager.GenerateTwoFactorTokenAsync(userId, model.SelectedProvider);
                 return RedirectToAction("VerifyCode", new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl });
             }
             return View();
