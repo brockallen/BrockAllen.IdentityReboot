@@ -24,8 +24,7 @@ namespace BrockAllen.IdentityReboot.Tests
         IUserStore<TestUser>, 
         IUserPasswordStore<TestUser>, 
         IUserSecurityStampStore<TestUser>,
-        IUserPhoneNumberStore<TestUser>,
-        IBruteForcePreventionStore<TestUser, string>
+        IUserPhoneNumberStore<TestUser>
     {
         List<TestUser> users = new List<TestUser>();
         public Task CreateAsync(TestUser user)
@@ -60,18 +59,6 @@ namespace BrockAllen.IdentityReboot.Tests
 
         public void Dispose()
         {
-        }
-
-        public Task<FailedLoginAttempts> GetFailedLoginAttemptsAsync(TestUser user)
-        {
-            return Task.FromResult(new FailedLoginAttempts { Count = user.FailedLoginCount, LastFailedDate = user.LastFailedLogin });
-        }
-
-        public Task SetFailedLoginAttemptsAsync(TestUser user, FailedLoginAttempts attempts)
-        {
-            user.FailedLoginCount = attempts.Count;
-            user.LastFailedLogin = attempts.LastFailedDate;
-            return Task.FromResult(0);
         }
 
         public Task<string> GetPasswordHashAsync(TestUser user)
@@ -152,6 +139,11 @@ namespace BrockAllen.IdentityReboot.Tests
             {
                 return now ?? DateTime.UtcNow;
             }
+        }
+
+        public override Task NotifyAsync(string token, UserManager<TestUser, string> manager, TestUser user)
+        {
+            return Task.FromResult(0);
         }
     }
 

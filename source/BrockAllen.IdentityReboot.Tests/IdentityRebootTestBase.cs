@@ -23,9 +23,7 @@ namespace BrockAllen.IdentityReboot.Tests
             store = new TestUserStore();
             var configuration = new IdentityRebootConfiguration()
             {
-                FailedLoginsAllowed = 5,
                 PasswordHashIterations = 100,
-                FailedLoginLockout = TimeSpan.FromMinutes(5)
             };
             manager = new TestIdentityRebootUserManager(store, configuration);
 

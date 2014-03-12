@@ -15,17 +15,22 @@ namespace BrockAllen.IdentityReboot
     {
         public string MessageFormat { get; set; }
 
-        public override async Task<bool> IsValidProviderForUserAsync(UserManager<TUser, TKey> manager, TUser user)
+        public async override Task<bool> IsValidProviderForUserAsync(UserManager<TUser, TKey> manager, TUser user)
         {
-            var phone = await manager.GetPhoneNumberAsync(user.Id);
             return 
-                !String.IsNullOrWhiteSpace(phone) && 
-                await base.IsValidProviderForUserAsync(manager, user);
+                await base.IsValidProviderForUserAsync(manager, user) &&
+                !String.IsNullOrWhiteSpace(await manager.GetPhoneNumberAsync(user.Id)) &&
+                await manager.IsPhoneNumberConfirmedAsync(user.Id);
         }
 
-        protected override async Task SendCode(UserManager<TUser, TKey> manager, TUser user, string code)
+        public async override Task NotifyAsync(string token, UserManager<TUser, TKey> manager, TUser user)
         {
-            await manager.SendSmsAsync(user.Id, String.Format(MessageFormat, code));
+            var msg = token;
+            if (MessageFormat != null)
+            {
+                msg = String.Format(MessageFormat, token);
+            }
+            await manager.SendSmsAsync(user.Id, msg);
         }
     }
 

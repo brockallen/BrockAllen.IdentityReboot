@@ -1,6 +1,7 @@
 ﻿using BrockAllen.IdentityReboot.Internal;
 using Microsoft.AspNet.Identity;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -8,6 +9,7 @@ namespace BrockAllen.IdentityReboot
 {
     public class AdaptivePasswordHasher : IPasswordHasher
     {
+        static readonly TimeSpan DefaultTargetPasswordDuration = TimeSpan.FromMilliseconds(500);
         public const char PasswordHashingIterationCountSeparator = '.';
 
         public int IterationCount { get; set; }
@@ -18,7 +20,35 @@ namespace BrockAllen.IdentityReboot
 
         public AdaptivePasswordHasher(int iterations)
         {
+            if (iterations <= 0) throw new ArgumentException("Invalid iterations");
+
             this.IterationCount = iterations;
+        }
+        
+        public AdaptivePasswordHasher(TimeSpan targetDuration)
+        {
+            if (targetDuration <= TimeSpan.Zero) throw new ArgumentException("Invalid targetDuration");
+
+            this.IterationCount = Estimate(targetDuration);
+        }
+
+        private int Estimate(TimeSpan targetDuration)
+        {
+            int[] guesses = new int[100];
+            for (var i = 0; i < guesses.Length; i++)
+            {
+                guesses[i] = Test(100, targetDuration);
+            }
+            return (int)guesses.Average();
+        }
+        private static int Test(int count, TimeSpan targetDuration)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            Crypto.HashPassword("Test123$%^", count);
+            sw.Stop();
+            var guess = (targetDuration.TotalMilliseconds / sw.Elapsed.TotalMilliseconds) * count;
+            return (int)guess;
         }
 
         public string HashPassword(string password)

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BrockAllen.IdentityReboot
 {
-    public class StoredTwoFactorCodeProvider<TUser, TKey> : IUserTokenProvider<TUser, TKey>
+    public abstract class StoredTwoFactorCodeProvider<TUser, TKey> : IUserTokenProvider<TUser, TKey>
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
     {
@@ -26,11 +26,6 @@ namespace BrockAllen.IdentityReboot
             Digits = DefaultDigitLength;
             HashingIterations = DefaultHashIterations;
             ValidityDuration = DefaultValidityDuration;
-        }
-
-        protected virtual Task SendCode(UserManager<TUser, TKey> manager, TUser user, string code) 
-        {
-            return Task.FromResult(0);
         }
 
         public async Task<string> GenerateAsync(string purpose, UserManager<TUser, TKey> manager, TUser user)
@@ -54,8 +49,6 @@ namespace BrockAllen.IdentityReboot
             await twoFactAuthManager.SetTwoFactorAuthDataAsync(user, data);
             await manager.UpdateAsync(user);
 
-            await SendCode(manager, user, code);
-
             return code;
         }
 
@@ -65,6 +58,8 @@ namespace BrockAllen.IdentityReboot
             return Task.FromResult(twoFactAuthManager != null && twoFactAuthManager.IsSupported());
         }
 
+        public abstract Task NotifyAsync(string token, UserManager<TUser, TKey> manager, TUser user);
+
         public async Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser, TKey> manager, TUser user)
         {
             var twoFactAuthManager = manager as IUserManagerSupportsTwoFactorAuthStore<TUser, TKey>;
@@ -72,7 +67,7 @@ namespace BrockAllen.IdentityReboot
             if (!twoFactAuthManager.IsSupported()) throw new InvalidOperationException(Messages.ITwoFactorCodeStoreNotImplemented);
 
             var data = await twoFactAuthManager.GetTwoFactorAuthDataAsync(user);
-            if (data != null && 
+            if (data != null &&
                 data.HashedCode != null &&
                 UtcNow < data.DateIssued.Add(this.ValidityDuration))
             {
@@ -83,13 +78,13 @@ namespace BrockAllen.IdentityReboot
             return false;
         }
 
-        protected virtual DateTime UtcNow 
+        protected virtual DateTime UtcNow
         {
             get { return DateTime.UtcNow; }
         }
     }
 
-    public class StoredTwoFactorCodeProvider<TUser> : StoredTwoFactorCodeProvider<TUser, string>
+    public abstract class StoredTwoFactorCodeProvider<TUser> : StoredTwoFactorCodeProvider<TUser, string>
         where TUser : class, IUser<string>
     {
     }
