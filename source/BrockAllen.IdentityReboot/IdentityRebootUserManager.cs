@@ -10,6 +10,8 @@ namespace BrockAllen.IdentityReboot
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
     {
+        static readonly TimeSpan DefaultTargetPasswordDuration = TimeSpan.FromMilliseconds(500);
+
         public IdentityRebootUserManager(IUserStore<TUser, TKey> store)
             : this(store, null)
         {
@@ -20,7 +22,7 @@ namespace BrockAllen.IdentityReboot
         {
             if (config == null)
             {
-                this.PasswordHasher = new AdaptivePasswordHasher();
+                this.PasswordHasher = new AdaptivePasswordHasher(DefaultTargetPasswordDuration);
             }
             else
             {

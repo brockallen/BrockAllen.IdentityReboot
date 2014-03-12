@@ -9,7 +9,8 @@ namespace BrockAllen.IdentityReboot
 {
     public class AdaptivePasswordHasher : IPasswordHasher
     {
-        static readonly TimeSpan DefaultTargetPasswordDuration = TimeSpan.FromMilliseconds(500);
+        static volatile int iterationsPerMillisecond;
+
         public const char PasswordHashingIterationCountSeparator = '.';
 
         public int IterationCount { get; set; }
@@ -29,26 +30,38 @@ namespace BrockAllen.IdentityReboot
         {
             if (targetDuration <= TimeSpan.Zero) throw new ArgumentException("Invalid targetDuration");
 
-            this.IterationCount = Estimate(targetDuration);
+            this.IterationCount = GetIterationsFromTimeSpan(targetDuration);
         }
 
-        private int Estimate(TimeSpan targetDuration)
+        private int GetIterationsFromTimeSpan(TimeSpan targetDuration)
+        {
+            if (iterationsPerMillisecond == 0)
+            {
+                var tmp1 = CalculateIterationsPerMillisecond();
+                var tmp2 = CalculateIterationsPerMillisecond();
+                iterationsPerMillisecond = Math.Max(tmp1, tmp2);
+            }
+            var calculated = (int)(targetDuration.TotalMilliseconds * iterationsPerMillisecond);
+            return calculated;
+        }
+        
+        private static int CalculateIterationsPerMillisecond()
         {
             int[] guesses = new int[100];
             for (var i = 0; i < guesses.Length; i++)
             {
-                guesses[i] = Test(100, targetDuration);
+                guesses[i] = MeasureIterationsPerMillisecond(100);
             }
             return (int)guesses.Average();
         }
-        private static int Test(int count, TimeSpan targetDuration)
+
+        private static int MeasureIterationsPerMillisecond(int iterations)
         {
             var sw = new Stopwatch();
             sw.Start();
-            Crypto.HashPassword("Test123$%^", count);
+            Crypto.HashPassword("Test123$%^", iterations);
             sw.Stop();
-            var guess = (targetDuration.TotalMilliseconds / sw.Elapsed.TotalMilliseconds) * count;
-            return (int)guess;
+            return (int)(iterations / sw.Elapsed.TotalMilliseconds);
         }
 
         public string HashPassword(string password)
