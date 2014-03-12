@@ -20,7 +20,7 @@ namespace IdentitySample.Controllers
         {
         }
 
-        public UsersAdminController(ApplicationUserManager userManager, RoleManager<IdentityRole> roleManager)
+        public UsersAdminController(ApplicationUserManager userManager, ApplicationRoleManager roleManager)
         {
             UserManager = userManager;
             RoleManager = roleManager;
@@ -39,12 +39,12 @@ namespace IdentitySample.Controllers
             }
         }
 
-        private RoleManager<IdentityRole> _roleManager;
-        public RoleManager<IdentityRole> RoleManager
+        private ApplicationRoleManager _roleManager;
+        public ApplicationRoleManager RoleManager
         {
             get
             {
-                return _roleManager ?? new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(HttpContext.GetOwinContext().Get<ApplicationDbContext>()));
+                return _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
             }
             private set
             {
@@ -68,12 +68,9 @@ namespace IdentitySample.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             var user = await UserManager.FindByIdAsync(id);
-            List<string> roleNames = new List<string>();
-            foreach (var item in user.Roles)
-            {
-                roleNames.Add((await RoleManager.FindByIdAsync(item.RoleId)).Name);
-            }
-            ViewBag.RoleNames = roleNames;
+
+            ViewBag.RoleNames = await UserManager.GetRolesAsync(user.Id);
+
             return View(user);
         }
 
@@ -89,19 +86,19 @@ namespace IdentitySample.Controllers
         //
         // POST: /Users/Create
         [HttpPost]
-        public async Task<ActionResult> Create(RegisterViewModel userViewModel, string roleId)
+        public async Task<ActionResult> Create(RegisterViewModel userViewModel, params string[] selectedRoles)
         {
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = userViewModel.Email, Email = userViewModel.Email };
                 var adminresult = await UserManager.CreateAsync(user, userViewModel.Password);
 
-                //Add User to the selected Role 
+                //Add User to the selected Roles 
                 if (adminresult.Succeeded)
                 {
-                    if (!String.IsNullOrEmpty(roleId))
+                    if (selectedRoles != null)
                     {
-                        var result = await UserManager.AddToRoleAsync(user.Id, roleId);
+                        var result = await UserManager.AddUserToRolesAsync(user.Id, selectedRoles);
                         if (!result.Succeeded)
                         {
                             ModelState.AddModelError("", result.Errors.First());
@@ -136,19 +133,52 @@ namespace IdentitySample.Controllers
             {
                 return HttpNotFound();
             }
-            return View(user);
+
+            var userRoles = await UserManager.GetRolesAsync(user.Id);
+
+            return View(new EditUserViewModel()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                RolesList = RoleManager.Roles.ToList().Select(x => new SelectListItem()
+                {
+                    Selected = userRoles.Contains(x.Name),
+                    Text = x.Name,
+                    Value = x.Name
+                })
+            });
         }
 
         //
         // POST: /Users/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Email,Id")] ApplicationUser user)
+        public async Task<ActionResult> Edit([Bind(Include = "Email,Id")] EditUserViewModel editUser, params string[] selectedRole)
         {
             if (ModelState.IsValid)
             {
-                user.UserName = user.Email;
-                var result = await UserManager.UpdateAsync(user);
+                var user = await UserManager.FindByIdAsync(editUser.Id);
+                if (user == null)
+                {
+                    return HttpNotFound();
+                }
+
+                user.UserName = editUser.Email;
+                user.Email = editUser.Email;
+
+                var userRoles = await UserManager.GetRolesAsync(user.Id);
+
+                selectedRole = selectedRole ?? new string[] { };
+
+                var result = await UserManager.AddUserToRolesAsync(user.Id, selectedRole.Except(userRoles).ToList<string>());
+
+                if (!result.Succeeded)
+                {
+                    ModelState.AddModelError("", result.Errors.First());
+                    return View();
+                }
+                result = await UserManager.RemoveUserFromRolesAsync(user.Id, userRoles.Except(selectedRole).ToList<string>());
+
                 if (!result.Succeeded)
                 {
                     ModelState.AddModelError("", result.Errors.First());

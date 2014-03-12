@@ -1,4 +1,5 @@
-﻿using IdentitySample.Models;
+﻿using System.Globalization;
+using IdentitySample.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
@@ -54,12 +55,29 @@ namespace IdentitySample.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await UserManager.FindAsync(model.Email, model.Password);
-                if (user != null)
+                var user = await UserManager.FindByNameAsync(model.Email);
+                if (user == null)
                 {
+                    ModelState.AddModelError("", "Invalid login attempt.");
+                    return View(model);
+                }
+                if (await UserManager.IsLockedOutAsync(user.Id))
+                {
+                    return View("Lockout");
+                }
+                if (await UserManager.CheckPasswordAsync(user, model.Password))
+                {
+                    // Uncomment to enable lockout when password login fails
+                    //await UserManager.ResetAccessFailedCountAsync(user.Id);
                     return await LoginCommon(user, model.RememberMe, returnUrl);
                 }
-                ModelState.AddModelError("", "Invalid username or password.");
+                else
+                {
+                    // Uncomment to enable lockout when password login fails
+                    //await UserManager.AccessFailedAsync(user.Id);
+                    ModelState.AddModelError("", "Invalid login attempt.");
+                    return View(model);
+                }
             }
 
             // If we got this far, something failed, redisplay form
@@ -72,17 +90,16 @@ namespace IdentitySample.Controllers
         public async Task<ActionResult> VerifyCode(string provider, string returnUrl)
         {
             // Require that the user has already logged in via username/password or external login
-            string userId = await GetTwoFactorUserIdAsync();
+            var userId = await GetTwoFactorUserIdAsync();
             if (userId == null)
             {
                 return View("Error");
             }
-
             var user = await UserManager.FindByIdAsync(userId);
             if (user != null)
             {
                 // To exercise the flow without actually sending codes, uncomment the following line
-                //ViewBag.Status = "For DEMO purposes the current " + provider + " code is: " + await UserManager.GenerateTwoFactorTokenAsync(user.Id, provider);
+                ViewBag.Status = "For DEMO purposes the current " + provider + " code is: " + await UserManager.GenerateTwoFactorTokenAsync(user.Id, provider);
             }
             return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl });
         }
@@ -96,19 +113,26 @@ namespace IdentitySample.Controllers
         {
             if (ModelState.IsValid)
             {
-                string userId = await GetTwoFactorUserIdAsync();
+                var userId = await GetTwoFactorUserIdAsync();
                 if (userId == null)
                 {
                     return View("Error");
                 }
 
                 var user = await UserManager.FindByIdAsync(userId);
+                if (await UserManager.IsLockedOutAsync(user.Id)) {
+                    return View("Lockout");
+                }
                 if (await UserManager.VerifyTwoFactorTokenAsync(user.Id, model.Provider, model.Code))
                 {
+                    // When token is verified correctly, clear the access failed count used for lockout
+                    await UserManager.ResetAccessFailedCountAsync(user.Id);
                     await SignInAsync(user, model.RememberBrowser, model.RememberBrowser);
                     return RedirectToLocal(model.ReturnUrl);
                 }
-                ModelState.AddModelError("", "Invalid code");
+                // If the token is incorrect, record the failure which also may cause the user to be locked out
+                await UserManager.AccessFailedAsync(user.Id);
+                ModelState.AddModelError("", "Incorrect token.");
             }
             // If we got this far, something failed, redisplay form
             return View(model);
@@ -132,10 +156,10 @@ namespace IdentitySample.Controllers
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                IdentityResult result = await UserManager.CreateAsync(user, model.Password);
+                var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    string code = await UserManager.GetEmailConfirmationTokenAsync(user.Id);
+                    var code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
                     ViewBag.Link = callbackUrl;
@@ -157,8 +181,7 @@ namespace IdentitySample.Controllers
             {
                 return View("Error");
             }
-
-            IdentityResult result = await UserManager.ConfirmEmailAsync(userId, code);
+            var result = await UserManager.ConfirmEmailAsync(userId, code);
             if (result.Succeeded)
             {
                 return View("ConfirmEmail");
@@ -187,11 +210,11 @@ namespace IdentitySample.Controllers
                 var user = await UserManager.FindByNameAsync(model.Email);
                 if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
                 {
-                    ModelState.AddModelError("", "The user either does not exist or is not confirmed.");
-                    return View();
+                    // Don't reveal that the user does not exist or is not confirmed
+                    return View("ForgotPasswordConfirmation");
                 }
 
-                string code = await UserManager.GetPasswordResetTokenAsync(user.Id);
+                var code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                 await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
                 ViewBag.Link = callbackUrl;
@@ -215,11 +238,7 @@ namespace IdentitySample.Controllers
         [AllowAnonymous]
         public ActionResult ResetPassword(string code)
         {
-            if (code == null)
-            {
-                return View("Error");
-            }
-            return View();
+            return code == null ? View("Error") : View();
         }
 
         //
@@ -229,25 +248,23 @@ namespace IdentitySample.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ResetPassword(ResetPasswordViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = await UserManager.FindByNameAsync(model.Email);
-                if (user == null)
-                {
-                    ModelState.AddModelError("", "No user found.");
-                    return View();
-                }
-                IdentityResult result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("ResetPasswordConfirmation", "Account");
-                }
-                AddErrors(result);
-                return View();
+                return View(model);
             }
-
-            // If we got this far, something failed, redisplay form
-            return View(model);
+            var user = await UserManager.FindByNameAsync(model.Email);
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist
+                return RedirectToAction("ResetPasswordConfirmation", "Account");
+            }
+            var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
+            if (result.Succeeded)
+            {
+                return RedirectToAction("ResetPasswordConfirmation", "Account");
+            }
+            AddErrors(result);
+            return View();
         }
 
         //
@@ -274,13 +291,13 @@ namespace IdentitySample.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> SendCode(string returnUrl)
         {
-            string userId = await GetTwoFactorUserIdAsync();
+            var userId = await GetTwoFactorUserIdAsync();
             if (userId == null)
             {
                 return View("Error");
             }
             var userFactors = await UserManager.GetValidTwoFactorProvidersAsync(userId);
-            var factorOptions = userFactors.Select(purpose => new SelectListItem {Text = purpose, Value = purpose}).ToList();
+            var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
             return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl });
         }
 
@@ -304,14 +321,15 @@ namespace IdentitySample.Controllers
             // Generate the token and send it
             if (ModelState.IsValid)
             {
-                string userId = await GetTwoFactorUserIdAsync();
+                var userId = await GetTwoFactorUserIdAsync();
                 if (userId == null)
                 {
                     return View("Error");
                 }
 
+                var token = await UserManager.GenerateTwoFactorTokenAsync(userId, model.SelectedProvider);
                 // See IdentityConfig.cs to plug in Email/SMS services to actually send the code
-                await UserManager.GenerateTwoFactorTokenAsync(userId, model.SelectedProvider);
+                await UserManager.NotifyTwoFactorTokenAsync(userId, model.SelectedProvider, token);
                 return RedirectToAction("VerifyCode", new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl });
             }
             return View();
@@ -345,6 +363,9 @@ namespace IdentitySample.Controllers
             var user = await UserManager.FindAsync(loginInfo.Login);
             if (user != null)
             {
+                if (await UserManager.IsLockedOutAsync(user.Id)) {
+                    return View("Lockout");
+                }
                 return await LoginCommon(user, isPersistent: false, returnUrl: returnUrl);
             }
             // If the user does not have an account, then prompt the user to create an account
@@ -374,7 +395,7 @@ namespace IdentitySample.Controllers
                     return View("ExternalLoginFailure");
                 }
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                IdentityResult result = await UserManager.CreateAsync(user);
+                var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
                     result = await UserManager.AddLoginAsync(user.Id, info.Login);

@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using System.Collections.Generic;
 
 namespace IdentitySample.Controllers
 {
@@ -18,7 +19,7 @@ namespace IdentitySample.Controllers
         }
 
         public RolesAdminController(ApplicationUserManager userManager,
-            RoleManager<IdentityRole> roleManager)
+            ApplicationRoleManager roleManager)
         {
             UserManager = userManager;
             RoleManager = roleManager;
@@ -37,12 +38,12 @@ namespace IdentitySample.Controllers
             }
         }
 
-        private RoleManager<IdentityRole> _roleManager;
-        public RoleManager<IdentityRole> RoleManager
+        private ApplicationRoleManager _roleManager;
+        public ApplicationRoleManager RoleManager
         {
             get
             {
-                return _roleManager ?? new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(HttpContext.GetOwinContext().Get<ApplicationDbContext>()));
+                return _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
             }
             private set
             {
@@ -67,7 +68,17 @@ namespace IdentitySample.Controllers
             }
             var role = await RoleManager.FindByIdAsync(id);
             // Get the list of Users in this Role
-            var users = UserManager.Users.Where(u => u.Roles.Any(ur => ur.RoleId == id));
+            var users = new List<ApplicationUser>();
+
+            // Get the list of Users in this Role
+            foreach (var user in UserManager.Users.ToList())
+            {
+                if (await UserManager.IsInRoleAsync(user.Id, role.Name))
+                {
+                    users.Add(user);
+                }
+            }
+
             ViewBag.Users = users;
             ViewBag.UserCount = users.Count();
             return View(role);
@@ -125,7 +136,8 @@ namespace IdentitySample.Controllers
         {
             if (ModelState.IsValid)
             {
-                var role = new IdentityRole { Id = roleModel.Id, Name = roleModel.Name };
+                var role = await RoleManager.FindByIdAsync(roleModel.Id);
+                role.Name = roleModel.Name;
                 await RoleManager.UpdateAsync(role);
                 return RedirectToAction("Index");
             }
