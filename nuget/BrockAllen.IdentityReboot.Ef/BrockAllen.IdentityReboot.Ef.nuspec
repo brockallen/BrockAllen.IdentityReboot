@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>BrockAllen.IdentityReboot.Ef</id>
-    <version>1.0.0-beta1</version>
+    <version>1.0.0-rtm</version>
     <authors>BrockAllen</authors>
     <owners>BrockAllen</owners>
     <licenseUrl>https://raw.github.com/brockallen/BrockAllen.IdentityReboot/master/license.txt</licenseUrl>
@@ -16,8 +16,8 @@
     <tags>ASP.NET Identity Password Management Two Factor Authentication</tags>
     
     <dependencies>
-      <dependency id="BrockAllen.IdentityReboot" version="1.0.0-beta1" />
-      <dependency id="Microsoft.AspNet.Identity.EntityFramework" version="2.0.0-beta1-140208" />
+      <dependency id="BrockAllen.IdentityReboot" version="2.0.0-rtm-140311" />
+      <dependency id="Microsoft.AspNet.Identity.EntityFramework" version="2.0.0-rtm-140311" />
     </dependencies>
   </metadata>
 </package>

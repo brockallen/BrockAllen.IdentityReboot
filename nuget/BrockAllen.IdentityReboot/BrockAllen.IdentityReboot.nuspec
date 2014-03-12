@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>BrockAllen.IdentityReboot</id>
-    <version>1.0.0-beta1</version>
+    <version>1.0.0-rtm</version>
     <authors>BrockAllen</authors>
     <owners>BrockAllen</owners>
     <licenseUrl>https://raw.github.com/brockallen/BrockAllen.IdentityReboot/master/license.txt</licenseUrl>
@@ -19,7 +19,7 @@
     </frameworkAssemblies>
 
     <dependencies>
-      <dependency id="Microsoft.AspNet.Identity.Core" version="2.0.0-beta1-140208" />
+      <dependency id="Microsoft.AspNet.Identity.Core" version="2.0.0-rtm-140311" />
     </dependencies>
   </metadata>
 </package>
