@@ -10,6 +10,7 @@ namespace BrockAllen.IdentityReboot
     public class AdaptivePasswordHasher : IPasswordHasher
     {
         static volatile int iterationsPerMillisecond;
+        const int MinimumIterations = 50000;
 
         public const char PasswordHashingIterationCountSeparator = '.';
 
@@ -57,11 +58,54 @@ namespace BrockAllen.IdentityReboot
 
         private static int MeasureIterationsPerMillisecond(int iterations)
         {
-            var sw = new Stopwatch();
-            sw.Start();
+            var m = new Measure();
             Crypto.HashPassword("Test123$%^", iterations);
-            sw.Stop();
-            return (int)(iterations / sw.Elapsed.TotalMilliseconds);
+            return m.GetIterationsPerMillisecond(iterations); 
+        }
+
+        private static void AdjustIterationsPerMillisecond(int iterationsPerMs)
+        {
+            if (iterationsPerMillisecond > 0)
+            {
+                // if the original calculation is off by more than 10%, use new value
+                var diff = Math.Abs(iterationsPerMillisecond-iterationsPerMs);
+                var ratio = (diff * 1.0) / iterationsPerMillisecond;
+                if (ratio >= .2)
+                {
+                    iterationsPerMillisecond = iterationsPerMs;
+                }
+            }
+        }
+
+        class Measure
+        {
+            Stopwatch sw = new Stopwatch();
+            public Measure()
+            {
+                sw.Start();
+            }
+
+            public int GetIterationsPerMillisecond(int iterations)
+            {
+                sw.Stop();
+                return (int)(iterations / sw.ElapsedMilliseconds);
+            }
+        }
+
+        private static string HashPasswordInternal(string password, int count)
+        {
+            var m = new Measure();
+            var result = Crypto.HashPassword(password, count);
+            AdjustIterationsPerMillisecond(m.GetIterationsPerMillisecond(count));
+            return result;
+        }
+
+        private static bool VerifyHashedPasswordInternal(string hashedPassword, string providedPassword, int count)
+        {
+            var m = new Measure();
+            var result = Crypto.VerifyHashedPassword(hashedPassword, providedPassword, count);
+            AdjustIterationsPerMillisecond(m.GetIterationsPerMillisecond(count));
+            return result;
         }
 
         public string HashPassword(string password)
@@ -71,7 +115,7 @@ namespace BrockAllen.IdentityReboot
             {
                 count = GetIterationsFromYear(GetCurrentYear());
             }
-            var result = Crypto.HashPassword(password, count);
+            var result = HashPasswordInternal(password, count);
             return EncodeIterations(count) + PasswordHashingIterationCountSeparator + result;
         }
 
@@ -89,7 +133,7 @@ namespace BrockAllen.IdentityReboot
 
                     hashedPassword = parts[1];
 
-                    if (Crypto.VerifyHashedPassword(hashedPassword, providedPassword, count))
+                    if (VerifyHashedPasswordInternal(hashedPassword, providedPassword, count))
                     {
                         return PasswordVerificationResult.Success;
                     }
