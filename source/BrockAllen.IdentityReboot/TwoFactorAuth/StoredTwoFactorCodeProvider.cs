@@ -34,6 +34,9 @@ namespace BrockAllen.IdentityReboot
             if (twoFactAuthManager == null) throw new InvalidOperationException(Messages.IUserManagerSupportsTwoFactorAuthStoreNotImplemented);
             if (!twoFactAuthManager.IsSupported()) throw new InvalidOperationException(Messages.ITwoFactorCodeStoreNotImplemented);
 
+            var stamp = await manager.GetSecurityStampAsync(user.Id);
+            purpose += stamp;
+
             var bytes = Crypto.GenerateSaltInternal(sizeof(long));
             var val = BitConverter.ToInt64(bytes, 0);
             var mod = (int)Math.Pow(10, Digits);
@@ -71,6 +74,9 @@ namespace BrockAllen.IdentityReboot
                 data.HashedCode != null &&
                 UtcNow < data.DateIssued.Add(this.ValidityDuration))
             {
+                var stamp = await manager.GetSecurityStampAsync(user.Id);
+                purpose += stamp;
+
                 var hasher = new AdaptivePasswordHasher(this.HashingIterations);
                 return hasher.VerifyHashedPassword(data.HashedCode, purpose + token) != PasswordVerificationResult.Failed;
             }
