@@ -9,9 +9,6 @@ namespace BrockAllen.IdentityReboot
 {
     public class AdaptivePasswordHasher : IPasswordHasher
     {
-        static volatile int iterationsPerMillisecond;
-        const int MinimumIterations = 50000;
-
         public const char PasswordHashingIterationCountSeparator = '.';
 
         public int IterationCount { get; set; }
@@ -26,85 +23,16 @@ namespace BrockAllen.IdentityReboot
 
             this.IterationCount = iterations;
         }
-        
-        public AdaptivePasswordHasher(TimeSpan targetDuration)
-        {
-            if (targetDuration <= TimeSpan.Zero) throw new ArgumentException("Invalid targetDuration");
-
-            this.IterationCount = GetIterationsFromTimeSpan(targetDuration);
-        }
-
-        private int GetIterationsFromTimeSpan(TimeSpan targetDuration)
-        {
-            if (iterationsPerMillisecond == 0)
-            {
-                var tmp1 = CalculateIterationsPerMillisecond();
-                var tmp2 = CalculateIterationsPerMillisecond();
-                iterationsPerMillisecond = Math.Max(tmp1, tmp2);
-            }
-            var calculated = (int)(targetDuration.TotalMilliseconds * iterationsPerMillisecond);
-            return calculated;
-        }
-        
-        private static int CalculateIterationsPerMillisecond()
-        {
-            int[] guesses = new int[100];
-            for (var i = 0; i < guesses.Length; i++)
-            {
-                guesses[i] = MeasureIterationsPerMillisecond(100);
-            }
-            return (int)guesses.Average();
-        }
-
-        private static int MeasureIterationsPerMillisecond(int iterations)
-        {
-            var m = new Measure();
-            Crypto.HashPassword("Test123$%^", iterations);
-            return m.GetIterationsPerMillisecond(iterations); 
-        }
-
-        private static void AdjustIterationsPerMillisecond(int iterationsPerMs)
-        {
-            if (iterationsPerMillisecond > 0)
-            {
-                // if the original calculation is off by more than 10%, use new value
-                var diff = Math.Abs(iterationsPerMillisecond-iterationsPerMs);
-                var ratio = (diff * 1.0) / iterationsPerMillisecond;
-                if (ratio >= .2)
-                {
-                    iterationsPerMillisecond = iterationsPerMs;
-                }
-            }
-        }
-
-        class Measure
-        {
-            Stopwatch sw = new Stopwatch();
-            public Measure()
-            {
-                sw.Start();
-            }
-
-            public int GetIterationsPerMillisecond(int iterations)
-            {
-                sw.Stop();
-                return (int)(iterations / sw.ElapsedMilliseconds);
-            }
-        }
 
         private static string HashPasswordInternal(string password, int count)
         {
-            var m = new Measure();
             var result = Crypto.HashPassword(password, count);
-            AdjustIterationsPerMillisecond(m.GetIterationsPerMillisecond(count));
             return result;
         }
 
         private static bool VerifyHashedPasswordInternal(string hashedPassword, string providedPassword, int count)
         {
-            var m = new Measure();
             var result = Crypto.VerifyHashedPassword(hashedPassword, providedPassword, count);
-            AdjustIterationsPerMillisecond(m.GetIterationsPerMillisecond(count));
             return result;
         }
 

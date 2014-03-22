@@ -21,11 +21,8 @@ namespace BrockAllen.IdentityReboot.Tests
         public virtual void Init()
         {
             store = new TestUserStore();
-            var configuration = new IdentityRebootConfiguration()
-            {
-                PasswordHashIterations = 100,
-            };
-            manager = new TestIdentityRebootUserManager(store, configuration);
+            manager = new TestIdentityRebootUserManager(store);
+            manager.PasswordHasher = new AdaptivePasswordHasher(100);
 
             user = new TestUser()
             {

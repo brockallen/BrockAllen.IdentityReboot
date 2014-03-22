@@ -13,29 +13,8 @@ namespace BrockAllen.IdentityReboot
         static readonly TimeSpan DefaultTargetPasswordDuration = TimeSpan.FromMilliseconds(500);
 
         public IdentityRebootUserManager(IUserStore<TUser, TKey> store)
-            : this(store, null)
-        {
-        }
-
-        public IdentityRebootUserManager(IUserStore<TUser, TKey> store, IdentityRebootConfiguration config)
             : base(store)
         {
-            if (config == null)
-            {
-                this.PasswordHasher = new AdaptivePasswordHasher(DefaultTargetPasswordDuration);
-            }
-            else
-            {
-                config.Validate();
-                if (config.PasswordHashingDuration > TimeSpan.Zero)
-                {
-                    this.PasswordHasher = new AdaptivePasswordHasher(config.PasswordHashingDuration);
-                }
-                else
-                {
-                    this.PasswordHasher = new AdaptivePasswordHasher(config.PasswordHashIterations);
-                }
-            }
         }
 
         protected virtual DateTime UtcNow
@@ -85,12 +64,7 @@ namespace BrockAllen.IdentityReboot
         where TUser : class, IUser<string>
     {
         public IdentityRebootUserManager(IUserStore<TUser> store)
-            : this(store, null)
-        {
-        }
-        
-        public IdentityRebootUserManager(IUserStore<TUser> store, IdentityRebootConfiguration config)
-            : base(store, config)
+            : base(store)
         {
         }
     }
