@@ -36,13 +36,19 @@ namespace BrockAllen.IdentityReboot
             return result;
         }
 
-        public string HashPassword(string password)
+        int GetIterationCount()
         {
             var count = IterationCount;
             if (count <= 0)
             {
                 count = GetIterationsFromYear(GetCurrentYear());
             }
+            return count;
+        }
+
+        public string HashPassword(string password)
+        {
+            int count = GetIterationCount();
             var result = HashPasswordInternal(password, count);
             return EncodeIterations(count) + PasswordHashingIterationCountSeparator + result;
         }
