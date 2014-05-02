@@ -33,6 +33,7 @@ namespace IdentitySample.Models
                 AllowOnlyAlphanumericUserNames = false,
                 RequireUniqueEmail = true
             };
+            manager.PasswordHasher = new AdaptivePasswordHasher(50000);
             // Configure validation logic for passwords
             //manager.PasswordValidator = new PasswordValidator
             //{
