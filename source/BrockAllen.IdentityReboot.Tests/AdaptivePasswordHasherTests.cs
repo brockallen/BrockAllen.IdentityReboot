@@ -150,7 +150,16 @@ namespace BrockAllen.IdentityReboot.Tests
         {
             var ph = new PasswordHasher();
             var hash = ph.HashPassword("pass");
-            Assert.IsTrue(subject.VerifyHashedPassword(hash, "pass") == PasswordVerificationResult.Success);
+            Assert.IsTrue(subject.VerifyHashedPassword(hash, "pass") == PasswordVerificationResult.SuccessRehashNeeded);
+        }
+
+        [TestMethod]
+        public void VerifyHashedPassword_StoredCountIsDifferentThanCurrentCount_ReturnsSuccessRehashNeeded()
+        {
+            subject.IterationCount = 1000;
+            var hash = subject.HashPassword("pass");
+            subject.IterationCount = 2000;
+            Assert.IsTrue(subject.VerifyHashedPassword(hash, "pass") == PasswordVerificationResult.SuccessRehashNeeded);
         }
     }
 

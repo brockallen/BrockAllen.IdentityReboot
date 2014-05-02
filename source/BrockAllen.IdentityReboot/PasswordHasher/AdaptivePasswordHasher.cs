@@ -69,12 +69,19 @@ namespace BrockAllen.IdentityReboot
 
                     if (VerifyHashedPasswordInternal(hashedPassword, providedPassword, count))
                     {
-                        return PasswordVerificationResult.Success;
+                        if (GetIterationCount() != count)
+                        {
+                            return PasswordVerificationResult.SuccessRehashNeeded;
+                        }
+                        else
+                        {
+                            return PasswordVerificationResult.Success;
+                        }
                     }
                 }
                 else if (Crypto.VerifyHashedPassword(hashedPassword, providedPassword))
                 {
-                    return PasswordVerificationResult.Success;
+                    return PasswordVerificationResult.SuccessRehashNeeded;
                 }
             }
 
