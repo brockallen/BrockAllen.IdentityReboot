@@ -26,14 +26,13 @@ namespace IdentitySample.Models
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
         {
-            var manager = new ApplicationUserManager(new IdentityRebootUserStore<ApplicationUser>(context.Get<ApplicationDbContext>()));
+            var manager = new ApplicationUserManager(new IdentityRebootUserStore<ApplicationUser>(context.Get<ApplicationDbContext>()), 50000);
             // Configure validation logic for usernames
             manager.UserValidator = new UserValidator<ApplicationUser>(manager)
             {
                 AllowOnlyAlphanumericUserNames = false,
                 RequireUniqueEmail = true
             };
-            manager.PasswordHasher = new AdaptivePasswordHasher(50000);
             // Configure validation logic for passwords
             //manager.PasswordValidator = new PasswordValidator
             //{

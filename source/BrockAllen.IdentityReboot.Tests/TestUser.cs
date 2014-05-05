@@ -113,8 +113,8 @@ namespace BrockAllen.IdentityReboot.Tests
 
     public class TestIdentityRebootUserManager : IdentityRebootUserManager<TestUser>
     {
-        public TestIdentityRebootUserManager(IUserStore<TestUser> store)
-            : base(store)
+        public TestIdentityRebootUserManager(IUserStore<TestUser> store, int hashingIterations)
+            : base(store, hashingIterations)
         {
         }
 
