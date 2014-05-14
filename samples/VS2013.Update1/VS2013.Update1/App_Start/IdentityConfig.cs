@@ -23,10 +23,14 @@ namespace IdentitySample.Models
             : base(store)
         {
         }
+        public ApplicationUserManager(IUserStore<ApplicationUser> store, int hashingIterations)
+            : base(store, hashingIterations)
+        {
+        }
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
         {
-            var manager = new ApplicationUserManager(new IdentityRebootUserStore<ApplicationUser>(context.Get<ApplicationDbContext>()), 50000);
+            var manager = new ApplicationUserManager(new IdentityRebootUserStore<ApplicationUser>(context.Get<ApplicationDbContext>()), 50001);
             // Configure validation logic for usernames
             manager.UserValidator = new UserValidator<ApplicationUser>(manager)
             {

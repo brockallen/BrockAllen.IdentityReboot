@@ -15,6 +15,13 @@ namespace BrockAllen.IdentityReboot
         public IdentityRebootUserManager(IUserStore<TUser, TKey> store)
             : base(store)
         {
+            PasswordHasher = new AdaptivePasswordHasher();
+        }
+
+        public IdentityRebootUserManager(IUserStore<TUser, TKey> store, int hashingIterations)
+            : base(store)
+        {
+            PasswordHasher = new AdaptivePasswordHasher(hashingIterations);
         }
 
         protected virtual DateTime UtcNow
@@ -66,13 +73,11 @@ namespace BrockAllen.IdentityReboot
         public IdentityRebootUserManager(IUserStore<TUser> store)
             : base(store)
         {
-            PasswordHasher = new AdaptivePasswordHasher();
         }
 
         public IdentityRebootUserManager(IUserStore<TUser> store, int hashingIterations)
-            : base(store)
+            : base(store, hashingIterations)
         {
-            PasswordHasher = new AdaptivePasswordHasher(hashingIterations);
         }
     }
 }
