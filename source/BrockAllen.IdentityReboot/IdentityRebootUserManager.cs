@@ -66,6 +66,13 @@ namespace BrockAllen.IdentityReboot
         public IdentityRebootUserManager(IUserStore<TUser> store)
             : base(store)
         {
+            PasswordHasher = new AdaptivePasswordHasher();
+        }
+
+        public IdentityRebootUserManager(IUserStore<TUser> store, int hashingIterations)
+            : base(store)
+        {
+            PasswordHasher = new AdaptivePasswordHasher(hashingIterations);
         }
     }
 }
